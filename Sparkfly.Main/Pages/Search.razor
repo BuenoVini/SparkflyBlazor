@@ -1,0 +1,17 @@
+﻿@page "/search"
+
+<MudContainer>
+    <MudTextField class="object-top" @bind-Value="SearchFor" Label="Search for a track" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Primary" />
+</MudContainer>
+
+<MudContainer Class="mt-8">
+    <MudText>@SearchFor</MudText>
+</MudContainer>
+
+
+@*<MudTextField class="object-top" @bind-Value="SearchFor" Label="Search for a track" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Primary" />
+<MudText>@SearchFor</MudText>*@
+
+@code {
+    public string? SearchFor { get; set; }
+}
