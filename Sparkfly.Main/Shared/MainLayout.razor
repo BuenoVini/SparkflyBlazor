@@ -13,10 +13,7 @@
         <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/BuenoVini/Sparkfly" Target="_blank" />
     </MudAppBar>
 
-    <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
-        <MudDrawerHeader>
-            <MudText Typo="Typo.h6">Sparkfly.Main</MudText>
-        </MudDrawerHeader>
+    <MudDrawer @bind-Open="_isDrawerOpen" Elevation="1" Variant="@DrawerVariant.Mini" ClipMode="DrawerClipMode.Always">
         <NavMenu />
     </MudDrawer>
 
@@ -28,11 +25,11 @@
 </MudLayout>
 
 @code {
-    bool _drawerOpen = true;
+    bool _isDrawerOpen = true;
     bool _isDarkMode = true;
 
     void DrawerToggle()
     {
-        _drawerOpen = !_drawerOpen;
+        _isDrawerOpen = !_isDrawerOpen;
     }
 }
