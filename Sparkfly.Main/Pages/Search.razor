@@ -1,10 +1,10 @@
 ﻿@page "/search"
 
-<MudContainer Class="px-0 mb-8">
-    <MudTextField class="object-top" @bind-Value="SearchFor" Label="Search for a track" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Primary" />
-</MudContainer>
-
 <MudStack>
+    <MudContainer Class="px-0 mb-8">
+        <MudTextField class="object-top" @bind-Value="SearchFor" Label="Search for a track" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Primary" />
+    </MudContainer>
+
     <MudPaper Class="pa-4">
         <MudStack Row="true">
             <MudImage ObjectFit="ObjectFit.Cover" Height="56" Width="56" Src="/img/1989TV.jpg" Alt="Album cover" Elevation="25" Class="rounded-sm"/>
@@ -16,7 +16,7 @@
             <MudSpacer />
 
             <div>
-                <MudIconButton Icon="@Icons.Material.Filled.FavoriteBorder" Color="Color.Secondary" aria-label="add to queue"></MudIconButton>
+                <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
             </div>
         </MudStack>
     </MudPaper>
@@ -32,7 +32,7 @@
             <MudSpacer />
 
             <div>
-                <MudIconButton Icon="@Icons.Material.Filled.FavoriteBorder" Color="Color.Secondary" aria-label="add to queue"></MudIconButton>
+                <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
             </div>
         </MudStack>
     </MudPaper>
@@ -49,7 +49,7 @@
             <MudSpacer />
 
             <div>
-                <MudIconButton Icon="@Icons.Material.Filled.FavoriteBorder" Color="Color.Secondary" aria-label="add to queue"></MudIconButton>
+                <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
             </div>
         </MudStack>
     </MudPaper>
@@ -65,7 +65,7 @@
             <MudSpacer />
 
             <div>
-                <MudIconButton Icon="@Icons.Material.Filled.FavoriteBorder" Color="Color.Secondary" aria-label="add to queue"></MudIconButton>
+                <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
             </div>
         </MudStack>
     </MudPaper>
@@ -80,7 +80,7 @@
             <MudSpacer />
 
             <div>
-                <MudIconButton Icon="@Icons.Material.Filled.FavoriteBorder" Color="Color.Secondary" aria-label="add to queue"></MudIconButton>
+                <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
             </div>
         </MudStack>
     </MudPaper>
@@ -96,7 +96,7 @@
             <MudSpacer />
 
             <div>
-                <MudIconButton Icon="@Icons.Material.Filled.FavoriteBorder" Color="Color.Secondary" aria-label="add to queue"></MudIconButton>
+                <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
             </div>
         </MudStack>
     </MudPaper>
