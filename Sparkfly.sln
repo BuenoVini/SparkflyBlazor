@@ -5,6 +5,8 @@ VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sparkfly.Main", "Sparkfly.Main\Sparkfly.Main.csproj", "{0862FEB9-302B-48BA-B2CE-4DCD2A224EED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RequestAPI", "RequestAPI\RequestAPI.csproj", "{49269679-5321-48B6-86C9-3B57FE0B89B4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{0862FEB9-302B-48BA-B2CE-4DCD2A224EED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0862FEB9-302B-48BA-B2CE-4DCD2A224EED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0862FEB9-302B-48BA-B2CE-4DCD2A224EED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49269679-5321-48B6-86C9-3B57FE0B89B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49269679-5321-48B6-86C9-3B57FE0B89B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49269679-5321-48B6-86C9-3B57FE0B89B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49269679-5321-48B6-86C9-3B57FE0B89B4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
