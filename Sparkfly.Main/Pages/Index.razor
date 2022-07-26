@@ -1,4 +1,9 @@
 ﻿@page "/"
+@page "/{code}/{state}"
+
+@using Sparkfly.Main.RequestAPI
+
+@inject Spotify spotify
 
 <PageTitle>Current playing</PageTitle>
 
@@ -22,7 +27,7 @@
     @*TODO: make this a component ??*@
     <MudPaper Class="pa-4">
         <MudStack Row="true">
-            <MudImage ObjectFit="ObjectFit.Cover" Height="56" Width="56" Src="/img/1989.png" Alt="Album cover" Elevation="25" Class="rounded-sm"/>
+            <MudImage ObjectFit="ObjectFit.Cover" Height="56" Width="56" Src="/img/1989.png" Alt="Album cover" Elevation="25" Class="rounded-sm" />
             <MudStack Justify="Justify.Center" Spacing="0">
                 <MudText Typo="Typo.body1">I Know Places</MudText>
                 <MudText Typo="Typo.body2">Taylor Swift</MudText>
@@ -36,4 +41,28 @@
         </MudStack>
     </MudPaper>
     @*TODO: make this a component ??*@
+
+    <p>Code = @Code</p>
+    <p>State = @State</p>
 </MudStack>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "code")]
+    public string? Code { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "state")]
+    public string? State { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var result = await ProtectedSessionStore.GetAsync<string>("state");
+
+            if (State == result.Value && Code is not null)
+                    spotify.SetAuthCode(Code);
+        }
+    }
+}
