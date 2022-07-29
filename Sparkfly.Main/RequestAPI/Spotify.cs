@@ -66,11 +66,11 @@ public class Spotify
         if (stateCode == (await _currentSession.GetAsync<string>("state")).Value)
         {
             _authCode = authCode;
-            await RequestAccessAndRefreshToken();
+            await RequestAccessToken();
         }
     }
 
-    private async Task RequestAccessAndRefreshToken()
+    private async Task RequestAccessToken()
     {
         var content = new FormUrlEncodedContent(new[]
         {
@@ -90,12 +90,36 @@ public class Spotify
             accessToken = jsonResponse.RootElement.GetProperty("access_token").GetString();
             refreshToken = jsonResponse.RootElement.GetProperty("refresh_token").GetString();
 
+            // TODO: find a proper way to store the tokens
             if (accessToken is not null && refreshToken is not null)
             {
-                // TODO: find a proper way to store the tokens
                 await _currentSession.SetAsync("access_token", accessToken);
                 await _currentSession.SetAsync("refresh_token", refreshToken);
             }
+        }
+    }
+
+    private async Task RefreshAccessToken()
+    {
+        var content = new FormUrlEncodedContent(new[]
+        {
+            new KeyValuePair<string, string?>("grant_type", "refresh_token"),
+            new KeyValuePair<string, string?>("refresh_token", (await _currentSession.GetAsync<string>("refresh_token")).Value)
+        });
+
+        using HttpResponseMessage httpResponse = await _httpClient.PostAsync("https://accounts.spotify.com/api/token", content);
+
+        if (httpResponse.IsSuccessStatusCode)
+        {
+            using JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
+
+            string? accessToken;
+
+            accessToken = jsonResponse.RootElement.GetProperty("access_token").GetString();
+
+            // TODO: find a proper way to store the tokens
+            if (accessToken is not null)
+                await _currentSession.SetAsync("access_token", accessToken);
         }
     }
 }
