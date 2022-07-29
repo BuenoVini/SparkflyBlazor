@@ -41,9 +41,6 @@
         </MudStack>
     </MudPaper>
     @*TODO: make this a component ??*@
-
-    <p>Code = @Code</p>
-    <p>State = @State</p>
 </MudStack>
 
 @code {
@@ -59,10 +56,8 @@
     {
         if (firstRender)
         {
-            var result = await ProtectedSessionStore.GetAsync<string>("state");
-
-            if (State == result.Value && Code is not null)
-                    spotify.SetAuthCode(Code);
+            if (Code is not null && State is not null)
+                await spotify.SetAuthCode(Code, State);
         }
     }
 }

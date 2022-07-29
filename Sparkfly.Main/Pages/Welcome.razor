@@ -18,12 +18,5 @@
 @code {
     private string? partyCode;
 
-    private async Task UserSignInSpotify()
-    {
-        string state = new Random().Next().ToString();
-
-        await ProtectedSessionStore.SetAsync("state", state);
-
-        spotify.GetUserAuthorization(state);
-    }
+    private async Task UserSignInSpotify() => await spotify.RequestUserAuthorization();
 }
