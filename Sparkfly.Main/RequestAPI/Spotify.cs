@@ -33,8 +33,6 @@ public class Spotify
 
         _CLIENT_ID = clientId;
         _CLIENT_SECRET = clientSecret;
-
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", $"{Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_CLIENT_ID}:{_CLIENT_SECRET}"))}");
     }
 
     public Spotify(NavigationManager navigationManager, ProtectedSessionStorage session)
@@ -42,6 +40,9 @@ public class Spotify
         _navigationManager = navigationManager;
         _currentSession = session;
     }
+
+    private AuthenticationHeaderValue SetBasicAuthHeader() => new AuthenticationHeaderValue("Basic", $"{Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_CLIENT_ID}:{_CLIENT_SECRET}"))}");
+    private AuthenticationHeaderValue SetBearerAuthHeader(string accessToken) => new AuthenticationHeaderValue("Bearer", accessToken);
 
     public async Task RequestUserAuthorization()
     {
@@ -66,6 +67,7 @@ public class Spotify
         if (stateCode == (await _currentSession.GetAsync<string>("state")).Value)
         {
             _authCode = authCode;
+
             await RequestAccessToken();
         }
     }
@@ -79,22 +81,23 @@ public class Spotify
             new KeyValuePair<string, string?>("redirect_uri", _REDIRECT_URI)
         });
 
+        _httpClient.DefaultRequestHeaders.Authorization = SetBasicAuthHeader();
         using HttpResponseMessage httpResponse = await _httpClient.PostAsync("https://accounts.spotify.com/api/token", content);
 
         if (httpResponse.IsSuccessStatusCode)
         {
             using JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
 
-            string? accessToken, refreshToken;
-
-            accessToken = jsonResponse.RootElement.GetProperty("access_token").GetString();
-            refreshToken = jsonResponse.RootElement.GetProperty("refresh_token").GetString();
+            string? accessToken = jsonResponse.RootElement.GetProperty("access_token").GetString();
+            string? refreshToken = jsonResponse.RootElement.GetProperty("refresh_token").GetString();
 
             // TODO: find a proper way to store the tokens
             if (accessToken is not null && refreshToken is not null)
             {
                 await _currentSession.SetAsync("access_token", accessToken);
                 await _currentSession.SetAsync("refresh_token", refreshToken);
+
+                _httpClient.DefaultRequestHeaders.Authorization = SetBearerAuthHeader(accessToken);
             }
         }
     }
@@ -107,20 +110,25 @@ public class Spotify
             new KeyValuePair<string, string?>("refresh_token", (await _currentSession.GetAsync<string>("refresh_token")).Value)
         });
 
+        _httpClient.DefaultRequestHeaders.Authorization = SetBasicAuthHeader();
         using HttpResponseMessage httpResponse = await _httpClient.PostAsync("https://accounts.spotify.com/api/token", content);
 
         if (httpResponse.IsSuccessStatusCode)
         {
             using JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
 
-            string? accessToken;
-
-            accessToken = jsonResponse.RootElement.GetProperty("access_token").GetString();
+            string? accessToken = jsonResponse.RootElement.GetProperty("access_token").GetString();
 
             // TODO: find a proper way to store the tokens
             if (accessToken is not null)
+            {
                 await _currentSession.SetAsync("access_token", accessToken);
+
+                _httpClient.DefaultRequestHeaders.Authorization = SetBearerAuthHeader(accessToken);
+            }
         }
     }
+
+    //public 
 }
 
