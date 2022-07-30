@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Sparkfly.Main.Data;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -8,7 +9,7 @@ namespace Sparkfly.Main.RequestAPI;
 
 public class Spotify
 {
-    private const string _API_ADDRESS = "https://api.spotify.com";
+    private const string _API_ADDRESS = "https://api.spotify.com/v1";
     private const string _REDIRECT_URI = "https://localhost:5001/";
     private const string _SCOPES = "user-read-private";
 
@@ -129,6 +130,43 @@ public class Spotify
         }
     }
 
-    //public 
+    public async Task<List<Track>?> SearchTracks(string searchFor)
+    {
+        KeyValuePair<string, string?>[] parameters = new[]
+        {
+            new KeyValuePair<string, string?>("q", searchFor),
+            new KeyValuePair<string, string?>("type", "track"),
+            new KeyValuePair<string, string?>("limit", "5")
+        };
+
+        using HttpResponseMessage httpResponse = await _httpClient.GetAsync(_API_ADDRESS + "/search" + QueryString.Create(parameters));
+
+        if (httpResponse.IsSuccessStatusCode)
+        {
+            using JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
+
+            List<Track> searchedTracks = new();
+            foreach (JsonElement item in jsonResponse.RootElement.GetProperty("tracks").GetProperty("items").EnumerateArray())
+            {
+                Track track = new();
+
+                track.SongId = item.GetProperty("id").GetString();
+                track.SongName = item.GetProperty("name").GetString();
+                track.AlbumName = item.GetProperty("album").GetProperty("name").GetString();
+
+                foreach(JsonElement cover in item.GetProperty("album").GetProperty("images").EnumerateArray())
+                    track.CoverSizesUrl.Add(cover.GetProperty("url").GetString());
+
+                foreach (JsonElement artist in item.GetProperty("artists").EnumerateArray())
+                    track.ArtistsNames.Add(artist.GetProperty("name").GetString());
+
+                searchedTracks.Add(track);
+            }
+
+            return searchedTracks;
+        }
+
+        return null;
+    }
 }
 

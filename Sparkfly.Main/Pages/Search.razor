@@ -1,108 +1,47 @@
 ﻿@page "/search"
 
+@using Sparkfly.Main.RequestAPI
+@using Sparkfly.Main.Data
+@using static Sparkfly.Main.Data.Track
+@inject Spotify spotify
+
 <MudStack>
-    <MudContainer Class="px-0 mb-8">
-        <MudTextField class="object-top" @bind-Value="SearchFor" Label="Search for a track" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Primary" />
-    </MudContainer>
+    <form @onsubmit="SearchTracks">
+        <MudContainer Class="px-0 mb-8">
+            <MudTextField class="object-top" @bind-Value="UserInput" Label="Search for a track" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Primary" />
+        </MudContainer>
+    </form>
 
-    <MudPaper Class="pa-4">
-        <MudStack Row="true">
-            <MudImage ObjectFit="ObjectFit.Cover" Height="56" Width="56" Src="/img/1989TV.jpg" Alt="Album cover" Elevation="25" Class="rounded-sm"/>
-            <MudStack Justify="Justify.Center" Spacing="0">
-                <MudText Typo="Typo.body1">Wildest Dreams (Taylor's ...</MudText>
-                <MudText Typo="Typo.body2">Taylor Swift</MudText>
-            </MudStack>
+    @if (SearchedTracks is not null)
+    {
+        @foreach (Track track in SearchedTracks)
+        {
+            <MudPaper Class="pa-4">
+                <MudStack Row="true">
+                    <MudImage ObjectFit="ObjectFit.Cover" Height="56" Width="56" Src=@track.CoverSizesUrl[(int)CoverSize.Small] Alt="Album cover" Elevation="25" Class="rounded-sm" />
+                    <MudStack Justify="Justify.Center" Spacing="0">
+                        <MudText Typo="Typo.body1">@track.SongName</MudText>
+                        <MudText Typo="Typo.body2">@track.ArtistsNames[0]</MudText>
+                    </MudStack>
 
-            <MudSpacer />
+                    <MudSpacer />
 
-            <div>
-                <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
-            </div>
-        </MudStack>
-    </MudPaper>
-
-    <MudPaper Class="pa-4">
-        <MudStack Row="true">
-            <MudImage ObjectFit="ObjectFit.Cover" Height="56" Width="56" Src="/img/1989.png" Alt="Album cover" Elevation="25" Class="rounded-sm"/>
-            <MudStack Justify="Justify.Center" Spacing="0">
-                <MudText Typo="Typo.body1">I Know Places</MudText>
-                <MudText Typo="Typo.body2">Taylor Swift</MudText>
-            </MudStack>
-
-            <MudSpacer />
-
-            <div>
-                <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
-            </div>
-        </MudStack>
-    </MudPaper>
-
-    @*APAGAR*@
-    <MudPaper Class="pa-4">
-        <MudStack Row="true">
-            <MudImage ObjectFit="ObjectFit.Cover" Height="56" Width="56" Src="/img/1989TV.jpg" Alt="Album cover" Elevation="25" Class="rounded-sm"/>
-            <MudStack Justify="Justify.Center" Spacing="0">
-                <MudText Typo="Typo.body1">Wildest Dreams (Taylor's ...</MudText>
-                <MudText Typo="Typo.body2">Taylor Swift</MudText>
-            </MudStack>
-
-            <MudSpacer />
-
-            <div>
-                <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
-            </div>
-        </MudStack>
-    </MudPaper>
-
-    <MudPaper Class="pa-4">
-        <MudStack Row="true">
-            <MudImage ObjectFit="ObjectFit.Cover" Height="56" Width="56" Src="/img/1989.png" Alt="Album cover" Elevation="25" Class="rounded-sm"/>
-            <MudStack Justify="Justify.Center" Spacing="0">
-                <MudText Typo="Typo.body1">I Know Places</MudText>
-                <MudText Typo="Typo.body2">Taylor Swift</MudText>
-            </MudStack>
-
-            <MudSpacer />
-
-            <div>
-                <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
-            </div>
-        </MudStack>
-    </MudPaper>
-    <MudPaper Class="pa-4">
-        <MudStack Row="true">
-            <MudImage ObjectFit="ObjectFit.Cover" Height="56" Width="56" Src="/img/1989TV.jpg" Alt="Album cover" Elevation="25" Class="rounded-sm"/>
-            <MudStack Justify="Justify.Center" Spacing="0">
-                <MudText Typo="Typo.body1">Wildest Dreams (Taylor's ...</MudText>
-                <MudText Typo="Typo.body2">Taylor Swift</MudText>
-            </MudStack>
-
-            <MudSpacer />
-
-            <div>
-                <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
-            </div>
-        </MudStack>
-    </MudPaper>
-
-    <MudPaper Class="pa-4">
-        <MudStack Row="true">
-            <MudImage ObjectFit="ObjectFit.Cover" Height="56" Width="56" Src="/img/1989.png" Alt="Album cover" Elevation="25" Class="rounded-sm"/>
-            <MudStack Justify="Justify.Center" Spacing="0">
-                <MudText Typo="Typo.body1">I Know Places</MudText>
-                <MudText Typo="Typo.body2">Taylor Swift</MudText>
-            </MudStack>
-
-            <MudSpacer />
-
-            <div>
-                <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
-            </div>
-        </MudStack>
-    </MudPaper>
-    @*APAGAR*@
+                    <div>
+                        <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
+                    </div>
+                </MudStack>
+            </MudPaper>
+        }
+    }
 </MudStack>
 
 @code {
-    public string? SearchFor { get; set; }
+    public string? UserInput { get; set; }
+    public List<Track>? SearchedTracks { get; set; }
+
+    private async Task SearchTracks()
+    {
+        if (UserInput is not null)
+            SearchedTracks = await spotify.SearchTracks(UserInput);
+    }
 }
