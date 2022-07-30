@@ -2,10 +2,9 @@
 
 @using Sparkfly.Main.RequestAPI
 @using Sparkfly.Main.Data
-@using static Sparkfly.Main.Data.Track
 @inject Spotify spotify
 
-<MudStack>
+<MudStack Class="d-flex flex-column flex-grow-1 gap-4">
     <form @onsubmit="SearchTracks">
         <MudContainer Class="px-0 mb-8">
             <MudTextField class="object-top" @bind-Value="UserInput" Label="Search for a track" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Primary" />
@@ -16,21 +15,7 @@
     {
         @foreach (Track track in SearchedTracks)
         {
-            <MudPaper Class="pa-4">
-                <MudStack Row="true">
-                    <MudImage ObjectFit="ObjectFit.Cover" Height="56" Width="56" Src=@track.CoverSizesUrl[(int)CoverSize.Small] Alt="Album cover" Elevation="25" Class="rounded-sm" />
-                    <MudStack Justify="Justify.Center" Spacing="0">
-                        <MudText Typo="Typo.body1">@track.SongName</MudText>
-                        <MudText Typo="Typo.body2">@track.ArtistsNames[0]</MudText>
-                    </MudStack>
-
-                    <MudSpacer />
-
-                    <div>
-                        <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
-                    </div>
-                </MudStack>
-            </MudPaper>
+            <TrackCard Track="track" />
         }
     }
 </MudStack>

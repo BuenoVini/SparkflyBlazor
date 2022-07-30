@@ -1,0 +1,24 @@
+﻿@using Sparkfly.Main.Data
+
+<MudPaper Class="pa-4">
+    <MudStack Row="true">
+        <MudImage ObjectFit="ObjectFit.Cover" Height="64" Src=@Track.CoverSizesUrl[(int)CoverSize.Small] Alt="Album cover" Elevation="25" Class="rounded-sm" />
+        <MudStack Justify="Justify.Center" Spacing="0">
+            <MudText Typo="Typo.body1">
+                @(Track.SongName?.Length <= MAX_CHARS ? Track.SongName : Track.SongName?.Substring(0, MAX_CHARS) + "...")
+            </MudText>
+            <MudText Typo="Typo.body2">@Track.ArtistsNames[0]</MudText>
+        </MudStack>
+
+        <MudSpacer />
+
+        <div>
+            <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
+        </div>
+    </MudStack>
+</MudPaper>
+
+@code {
+    private const int MAX_CHARS = 26;
+    [Parameter, EditorRequired] public Track Track { get; set; } = new();
+}

@@ -136,7 +136,7 @@ public class Spotify
         {
             new KeyValuePair<string, string?>("q", searchFor),
             new KeyValuePair<string, string?>("type", "track"),
-            new KeyValuePair<string, string?>("limit", "5")
+            new KeyValuePair<string, string?>("limit", "10")
         };
 
         using HttpResponseMessage httpResponse = await _httpClient.GetAsync(_API_ADDRESS + "/search" + QueryString.Create(parameters));
