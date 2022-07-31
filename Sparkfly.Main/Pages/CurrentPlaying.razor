@@ -1,0 +1,63 @@
+﻿@page "/current-playing"
+@page "/current-playing/{code}/{state}"
+
+@using Sparkfly.Main.RequestAPI
+
+@inject Spotify spotify
+
+<PageTitle>Current playing</PageTitle>
+
+<MudStack>
+    <MudText Align="Align.Center" Typo="Typo.h6">You are listening to:</MudText>
+
+    <MudPaper Class="pa-4" MaxWidth="350px">
+        <MudImage Class="rounded-lg align-self-center" Fluid="true" Src="/img/1989TV.jpg" Alt="Album current playing" Elevation="25" />
+
+        <MudDivider Class="my-4" DividerType="DividerType.Middle" />
+
+        <MudText Align="Align.Center" Typo="Typo.body1">Wildest Dreams (Taylor's Version)</MudText>
+        <MudText Align="Align.Center" Typo="Typo.body2">Taylor Swift</MudText>
+        <div class="d-flex justify-center mt-2">
+            <MudText Typo="Typo.caption">Suggested by <strong>Tiffany</strong>!</MudText>
+        </div>
+    </MudPaper>
+
+    <MudText Class="mt-4" Align="Align.Center" Typo="Typo.h6">Playing next: </MudText>
+
+    @*TODO: make this a component ??*@
+    <MudPaper Class="pa-4">
+        <MudStack Row="true">
+            <MudImage ObjectFit="ObjectFit.Cover" Height="56" Width="56" Src="/img/1989.png" Alt="Album cover" Elevation="25" Class="rounded-sm" />
+            <MudStack Justify="Justify.Center" Spacing="0">
+                <MudText Typo="Typo.body1">I Know Places</MudText>
+                <MudText Typo="Typo.body2">Taylor Swift</MudText>
+            </MudStack>
+
+            <MudSpacer />
+
+            <div>
+                <MudIconButton Icon="@Icons.Material.Filled.FavoriteBorder" Color="Color.Secondary" aria-label="add to queue"></MudIconButton>
+            </div>
+        </MudStack>
+    </MudPaper>
+    @*TODO: make this a component ??*@
+</MudStack>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "code")]
+    public string? Code { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "state")]
+    public string? State { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (Code is not null && State is not null)
+                await spotify.SetAuthCode(Code, State);
+        }
+    }
+}

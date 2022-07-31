@@ -10,7 +10,7 @@ namespace Sparkfly.Main.RequestAPI;
 public class Spotify
 {
     private const string _API_ADDRESS = "https://api.spotify.com/v1";
-    private const string _REDIRECT_URI = "https://localhost:5001/";
+    private const string _REDIRECT_URI = "https://localhost:5001/current-playing/";
     private const string _SCOPES = "user-read-private";
 
     private static readonly string _CLIENT_ID;
