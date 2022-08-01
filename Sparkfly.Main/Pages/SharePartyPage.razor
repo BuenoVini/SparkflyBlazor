@@ -1,0 +1,27 @@
+﻿@page "/share-party"
+@page "/share-party/{code}/{state}"
+
+@using Sparkfly.Main.RequestAPI
+
+@inject Spotify spotify
+
+<h3>Share the Party Code!</h3>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "code")]
+    public string? Code { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "state")]
+    public string? State { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (Code is not null && State is not null)
+                await spotify.SetAuthCode(Code, State);
+        }
+    }
+}

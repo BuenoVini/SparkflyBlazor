@@ -10,8 +10,8 @@ namespace Sparkfly.Main.RequestAPI;
 public class Spotify
 {
     private const string _API_ADDRESS = "https://api.spotify.com/v1";
-    private const string _REDIRECT_URI = "https://localhost:5001/current-playing/";
-    private const string _SCOPES = "user-read-private";
+    private const string _REDIRECT_URI = "https://localhost:5001/share-party";
+    private const string _SCOPES = "user-read-private user-read-currently-playing";
 
     private static readonly string _CLIENT_ID;
     private static readonly string _CLIENT_SECRET;
@@ -54,7 +54,7 @@ public class Spotify
             new KeyValuePair<string, string?>("client_id", _CLIENT_ID),
             new KeyValuePair<string, string?>("response_type", "code"),
             new KeyValuePair<string, string?>("redirect_uri", _REDIRECT_URI),
-            new KeyValuePair<string, string?>("scopes", _SCOPES),
+            new KeyValuePair<string, string?>("scope", _SCOPES),
             new KeyValuePair<string, string?>("state", state)
         };
 
@@ -130,6 +130,37 @@ public class Spotify
         }
     }
 
+    private Track GetTrackFromJson(JsonElement item)
+    {
+        Track track = new();
+
+        track.SongId = item.GetProperty("id").GetString();
+        track.SongName = item.GetProperty("name").GetString();
+        track.AlbumName = item.GetProperty("album").GetProperty("name").GetString();
+
+        foreach (JsonElement cover in item.GetProperty("album").GetProperty("images").EnumerateArray())
+            track.CoverSizesUrl.Add(cover.GetProperty("url").GetString());
+
+        foreach (JsonElement artist in item.GetProperty("artists").EnumerateArray())
+            track.ArtistsNames.Add(artist.GetProperty("name").GetString());
+
+        return track;
+    }
+
+    public async Task<Track?> GetCurrentlyPlaying()
+    {
+        using HttpResponseMessage httpResponse = await _httpClient.GetAsync(_API_ADDRESS + "/me/player/currently-playing");
+
+        if (httpResponse.IsSuccessStatusCode)
+        {
+            using JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
+
+            return GetTrackFromJson(jsonResponse.RootElement.GetProperty("item"));
+        }
+
+        return null;
+    }
+
     public async Task<List<Track>?> SearchTracks(string searchFor)
     {
         KeyValuePair<string, string?>[] parameters = new[]
@@ -147,21 +178,7 @@ public class Spotify
 
             List<Track> searchedTracks = new();
             foreach (JsonElement item in jsonResponse.RootElement.GetProperty("tracks").GetProperty("items").EnumerateArray())
-            {
-                Track track = new();
-
-                track.SongId = item.GetProperty("id").GetString();
-                track.SongName = item.GetProperty("name").GetString();
-                track.AlbumName = item.GetProperty("album").GetProperty("name").GetString();
-
-                foreach(JsonElement cover in item.GetProperty("album").GetProperty("images").EnumerateArray())
-                    track.CoverSizesUrl.Add(cover.GetProperty("url").GetString());
-
-                foreach (JsonElement artist in item.GetProperty("artists").EnumerateArray())
-                    track.ArtistsNames.Add(artist.GetProperty("name").GetString());
-
-                searchedTracks.Add(track);
-            }
+                searchedTracks.Add(GetTrackFromJson(item));
 
             return searchedTracks;
         }
