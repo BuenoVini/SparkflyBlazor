@@ -8,20 +8,20 @@
 
 @inject Spotify spotify
 
-<PageTitle>Current playing</PageTitle>
+<PageTitle>Listening to @currentTrack?.ArtistsNames[0]</PageTitle>
 
 <MudStack>
     <MudText Align="Align.Center" Typo="Typo.h6">You are listening to:</MudText>
 
-    @if (track is not null)
+    @if (currentTrack is not null)
     {
         <MudPaper Class="pa-4" MaxWidth="350px">
-            <MudImage Class="rounded-lg align-self-center" Fluid="true" Src=@track.CoverSizesUrl[(int)CoverSize.Medium] Alt="Album current playing" Elevation="25" />
+            <MudImage Class="rounded-lg align-self-center" Fluid="true" Src=@currentTrack.CoverSizesUrl[(int)CoverSize.Medium] Alt="Album current playing" Elevation="25" />
 
             <MudDivider Class="my-4" DividerType="DividerType.Middle" />
 
-            <MudText Align="Align.Center" Typo="Typo.body1">@track.SongName</MudText>
-            <MudText Align="Align.Center" Typo="Typo.body2">@track.ArtistsNames[0]</MudText>
+            <MudText Align="Align.Center" Typo="Typo.body1">@currentTrack.SongName</MudText>
+            <MudText Align="Align.Center" Typo="Typo.body2">@currentTrack.ArtistsNames[0]</MudText>
             <div class="d-flex justify-center mt-2">
                 <MudText Typo="Typo.caption">Suggested by <strong>Tiffany</strong>!</MudText>
             </div>
@@ -29,22 +29,29 @@
 
         <MudText Class="mt-4" Align="Align.Center" Typo="Typo.h6">Playing next: </MudText>
 
-        <TrackCard Track="@track" />
+        <TrackCard Track="@currentTrack" />
     }
+
+    @*@if (nextTrack is not null)
+    {
+        
+    }*@
 
 </MudStack>
 
 @code {
     private Timer? timer;
-    private Track? track;
+    private Track? currentTrack;
+    //private Track? nextTrack;
 
     protected override void OnInitialized()
     {
         timer = new Timer(async _ =>
         {
-            track = await spotify.GetCurrentlyPlaying();
+            currentTrack = await spotify.GetCurrentlyPlaying();
+            //nextTrack = await spotify.GetNextPlaying();
             await InvokeAsync(StateHasChanged);
-        }, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
+        }, null, TimeSpan.Zero, TimeSpan.FromSeconds(15));
     }
 
     public void Dispose() => timer?.Dispose();  // TODO: make async ??

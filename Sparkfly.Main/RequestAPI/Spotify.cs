@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Sparkfly.Main.Data;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -15,7 +16,7 @@ public class Spotify
 
     private static readonly string _CLIENT_ID;
     private static readonly string _CLIENT_SECRET;
-    private static readonly HttpClient _httpClient = new();
+    private static readonly HttpClient _httpClient;
 
     private readonly NavigationManager _navigationManager;
     private readonly ProtectedSessionStorage _currentSession;
@@ -34,6 +35,8 @@ public class Spotify
 
         _CLIENT_ID = clientId;
         _CLIENT_SECRET = clientSecret;
+
+        _httpClient = new();
     }
 
     public Spotify(NavigationManager navigationManager, ProtectedSessionStorage session)
@@ -42,6 +45,7 @@ public class Spotify
         _currentSession = session;
     }
 
+    // TODO: make these void
     private AuthenticationHeaderValue SetBasicAuthHeader() => new AuthenticationHeaderValue("Basic", $"{Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_CLIENT_ID}:{_CLIENT_SECRET}"))}");
     private AuthenticationHeaderValue SetBearerAuthHeader(string accessToken) => new AuthenticationHeaderValue("Bearer", accessToken);
 
@@ -151,14 +155,24 @@ public class Spotify
     {
         using HttpResponseMessage httpResponse = await _httpClient.GetAsync(_API_ADDRESS + "/me/player/currently-playing");
 
-        if (httpResponse.IsSuccessStatusCode)
+        Track? currentlyPlaying;
+        switch (httpResponse.StatusCode)
         {
-            using JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
+            case HttpStatusCode.OK:
+                using (JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync()))
+                    currentlyPlaying = GetTrackFromJson(jsonResponse.RootElement.GetProperty("item"));
+                break;
 
-            return GetTrackFromJson(jsonResponse.RootElement.GetProperty("item"));
+            case HttpStatusCode.NoContent:
+                currentlyPlaying = new Track().MakeThisDummy();
+                break;
+
+            default:
+                currentlyPlaying = null;
+                break;
         }
 
-        return null;
+        return currentlyPlaying;
     }
 
     public async Task<List<Track>?> SearchTracks(string searchFor)
