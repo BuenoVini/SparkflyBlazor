@@ -7,6 +7,7 @@
 @implements IDisposable
 
 @inject Spotify spotify
+@inject NavigationManager NavigationManager
 
 <PageTitle>Listening to @currentTrack?.ArtistsNames[0]</PageTitle>
 
@@ -48,9 +49,27 @@
     {
         timer = new Timer(async _ =>
         {
-            currentTrack = await spotify.GetCurrentlyPlaying();
-            //nextTrack = await spotify.GetNextPlaying();
-            await InvokeAsync(StateHasChanged);
+            try
+            {
+                currentTrack = await spotify.GetCurrentlyPlaying();
+                //nextTrack = await spotify.GetNextPlaying();
+
+                await InvokeAsync(StateHasChanged);
+            }
+            catch (HttpRequestException e)
+            {
+                try
+                {
+                    if (e.StatusCode == HttpStatusCode.Unauthorized)
+                        await spotify.RefreshAccessToken();
+                    else
+                        NavigationManager.NavigateTo("/unhandled-error");
+                }
+                catch (HttpRequestException)
+                {
+                    NavigationManager.NavigateTo("/unhandled-error");
+                }
+            }
         }, null, TimeSpan.Zero, TimeSpan.FromSeconds(15));
     }
 

@@ -29,9 +29,9 @@ public class Spotify
         string? clientSecret = Environment.GetEnvironmentVariable("SPOTIFY_CLIENT_SECRET");
 
         if (clientId is null)
-            throw new ArgumentNullException(nameof(clientId), "Environment Variable 'SPOTIFY_CLIENT_ID' was not found.");
+            throw new RequestAPIException("Environment Variable 'SPOTIFY_CLIENT_ID' was not found.");
         if (clientSecret is null)
-            throw new ArgumentNullException(nameof(clientSecret), "Environment Variable 'SPOTIFY_CLIENT_SECRET' was not found.");
+            throw new RequestAPIException("Environment Variable 'SPOTIFY_CLIENT_SECRET' was not found.");
 
         _CLIENT_ID = clientId;
         _CLIENT_SECRET = clientSecret;
@@ -45,9 +45,8 @@ public class Spotify
         _currentSession = session;
     }
 
-    // TODO: make these void
-    private AuthenticationHeaderValue SetBasicAuthHeader() => new AuthenticationHeaderValue("Basic", $"{Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_CLIENT_ID}:{_CLIENT_SECRET}"))}");
-    private AuthenticationHeaderValue SetBearerAuthHeader(string accessToken) => new AuthenticationHeaderValue("Bearer", accessToken);
+    private void SetBasicAuthHeader() => _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", $"{Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_CLIENT_ID}:{_CLIENT_SECRET}"))}");
+    private void SetBearerAuthHeader(string accessToken) => _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
     public async Task RequestUserAuthorization()
     {
@@ -86,28 +85,31 @@ public class Spotify
             new KeyValuePair<string, string?>("redirect_uri", _REDIRECT_URI)
         });
 
-        _httpClient.DefaultRequestHeaders.Authorization = SetBasicAuthHeader();
+        SetBasicAuthHeader();
         using HttpResponseMessage httpResponse = await _httpClient.PostAsync("https://accounts.spotify.com/api/token", content);
 
-        if (httpResponse.IsSuccessStatusCode)
-        {
-            using JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
+        httpResponse.EnsureSuccessStatusCode();
 
-            string? accessToken = jsonResponse.RootElement.GetProperty("access_token").GetString();
-            string? refreshToken = jsonResponse.RootElement.GetProperty("refresh_token").GetString();
+        using JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
 
-            // TODO: find a proper way to store the tokens
-            if (accessToken is not null && refreshToken is not null)
-            {
-                await _currentSession.SetAsync("access_token", accessToken);
-                await _currentSession.SetAsync("refresh_token", refreshToken);
+        string? accessToken = jsonResponse.RootElement.GetProperty("access_token").GetString();
+        string? refreshToken = jsonResponse.RootElement.GetProperty("refresh_token").GetString();
 
-                _httpClient.DefaultRequestHeaders.Authorization = SetBearerAuthHeader(accessToken);
-            }
-        }
+        // TODO: find a proper way to store the tokens
+        if (accessToken is not null)
+            await _currentSession.SetAsync("access_token", accessToken);
+        else
+            throw new RequestAPIException("Returned access token is null.");
+
+        if (refreshToken is not null)
+            await _currentSession.SetAsync("refresh_token", refreshToken);
+        else
+            throw new RequestAPIException("Returned refresh token is null.");
+
+        SetBearerAuthHeader(accessToken);
     }
 
-    private async Task RefreshAccessToken()
+    public async Task RefreshAccessToken()
     {
         var content = new FormUrlEncodedContent(new[]
         {
@@ -115,23 +117,22 @@ public class Spotify
             new KeyValuePair<string, string?>("refresh_token", (await _currentSession.GetAsync<string>("refresh_token")).Value)
         });
 
-        _httpClient.DefaultRequestHeaders.Authorization = SetBasicAuthHeader();
+        SetBasicAuthHeader();
         using HttpResponseMessage httpResponse = await _httpClient.PostAsync("https://accounts.spotify.com/api/token", content);
 
-        if (httpResponse.IsSuccessStatusCode)
-        {
-            using JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
+        httpResponse.EnsureSuccessStatusCode();
 
-            string? accessToken = jsonResponse.RootElement.GetProperty("access_token").GetString();
+        using JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
 
-            // TODO: find a proper way to store the tokens
-            if (accessToken is not null)
-            {
-                await _currentSession.SetAsync("access_token", accessToken);
+        string? accessToken = jsonResponse.RootElement.GetProperty("access_token").GetString();
 
-                _httpClient.DefaultRequestHeaders.Authorization = SetBearerAuthHeader(accessToken);
-            }
-        }
+        // TODO: find a proper way to store the tokens
+        if (accessToken is not null)
+            await _currentSession.SetAsync("access_token", accessToken);
+        else
+            throw new RequestAPIException("Returned access token is null.");
+
+        SetBearerAuthHeader(accessToken);
     }
 
     private Track GetTrackFromJson(JsonElement item)
@@ -151,31 +152,22 @@ public class Spotify
         return track;
     }
 
-    public async Task<Track?> GetCurrentlyPlaying()
+    public async Task<Track> GetCurrentlyPlaying()
     {
         using HttpResponseMessage httpResponse = await _httpClient.GetAsync(_API_ADDRESS + "/me/player/currently-playing");
 
-        Track? currentlyPlaying;
-        switch (httpResponse.StatusCode)
+        httpResponse.EnsureSuccessStatusCode();
+
+        if (httpResponse.StatusCode == HttpStatusCode.OK)
         {
-            case HttpStatusCode.OK:
-                using (JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync()))
-                    currentlyPlaying = GetTrackFromJson(jsonResponse.RootElement.GetProperty("item"));
-                break;
-
-            case HttpStatusCode.NoContent:
-                currentlyPlaying = new Track().MakeThisDummy();
-                break;
-
-            default:
-                currentlyPlaying = null;
-                break;
+            using JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
+            return GetTrackFromJson(jsonResponse.RootElement.GetProperty("item"));
         }
-
-        return currentlyPlaying;
+        else
+            return new Track().MakeThisDummy();
     }
 
-    public async Task<List<Track>?> SearchTracks(string searchFor)
+    public async Task<List<Track>> SearchTracks(string searchFor)
     {
         KeyValuePair<string, string?>[] parameters = new[]
         {
@@ -186,18 +178,15 @@ public class Spotify
 
         using HttpResponseMessage httpResponse = await _httpClient.GetAsync(_API_ADDRESS + "/search" + QueryString.Create(parameters));
 
-        if (httpResponse.IsSuccessStatusCode)
-        {
-            using JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
+        httpResponse.EnsureSuccessStatusCode();
 
-            List<Track> searchedTracks = new();
-            foreach (JsonElement item in jsonResponse.RootElement.GetProperty("tracks").GetProperty("items").EnumerateArray())
-                searchedTracks.Add(GetTrackFromJson(item));
+        JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
 
-            return searchedTracks;
-        }
+        List<Track> searchedTracks = new();
+        foreach (JsonElement item in jsonResponse.RootElement.GetProperty("tracks").GetProperty("items").EnumerateArray())
+            searchedTracks.Add(GetTrackFromJson(item));
 
-        return null;
+        return searchedTracks;
     }
 }
 
