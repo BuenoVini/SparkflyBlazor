@@ -3,7 +3,9 @@
 @using Sparkfly.Main.Components
 @using Sparkfly.Main.RequestAPI
 @using Sparkfly.Main.Data
+
 @inject Spotify spotify
+@inject NavigationManager NavigationManager
 
 <MudStack Class="d-flex flex-column flex-grow-1 gap-4">
     <form @onsubmit="SearchTracks">
@@ -27,7 +29,24 @@
 
     private async Task SearchTracks()
     {
-        if (UserInput is not null)
-            SearchedTracks = await spotify.SearchTracks(UserInput);
+        try
+        {
+            if (UserInput is not null)
+                SearchedTracks = await spotify.SearchTracksAsync(UserInput);
+        }
+        catch (HttpRequestException e)
+        {
+            try
+            {
+                if (e.StatusCode == HttpStatusCode.Unauthorized)
+                    await spotify.RefreshAccessTokenAsync();
+                else
+                    NavigationManager.NavigateTo("/unhandled-error");
+            }
+            catch (HttpRequestException)
+            {
+                NavigationManager.NavigateTo("/unhandled-error");
+            }
+        }
     }
 }

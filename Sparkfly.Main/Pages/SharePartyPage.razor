@@ -21,7 +21,7 @@
         if (firstRender)
         {
             if (Code is not null && State is not null)
-                await spotify.SetAuthCode(Code, State);
+                await spotify.RequestAccessAndRefreshTokensAsync(Code, State);
         }
     }
 }

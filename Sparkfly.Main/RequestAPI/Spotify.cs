@@ -48,7 +48,7 @@ public class Spotify
     private void SetBasicAuthHeader() => _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", $"{Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_CLIENT_ID}:{_CLIENT_SECRET}"))}");
     private void SetBearerAuthHeader(string accessToken) => _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-    public async Task RequestUserAuthorization()
+    public async Task RequestUserAuthorizationAsync()
     {
         string state = new Random().Next().ToString();
 
@@ -66,18 +66,18 @@ public class Spotify
         _navigationManager.NavigateTo("https://accounts.spotify.com/authorize" + QueryString.Create(parameters).ToString());
     }
 
-    public async Task SetAuthCode(string authCode, string stateCode)
+    private async Task SetAuthCodeAsync(string authCode, string stateCode)
     {
         if (stateCode == (await _currentSession.GetAsync<string>("state")).Value)
-        {
             _authCode = authCode;
-
-            await RequestAccessToken();
-        }
+        else
+            throw new RequestAPIException("Invalid state code returned by the server.");
     }
 
-    private async Task RequestAccessToken()
+    public async Task RequestAccessAndRefreshTokensAsync(string authCode, string stateCode)
     {
+        await SetAuthCodeAsync(authCode, stateCode);
+
         var content = new FormUrlEncodedContent(new[]
         {
             new KeyValuePair<string, string?>("grant_type", "authorization_code"),
@@ -109,7 +109,7 @@ public class Spotify
         SetBearerAuthHeader(accessToken);
     }
 
-    public async Task RefreshAccessToken()
+    public async Task RefreshAccessTokenAsync()
     {
         var content = new FormUrlEncodedContent(new[]
         {
@@ -135,24 +135,7 @@ public class Spotify
         SetBearerAuthHeader(accessToken);
     }
 
-    private Track GetTrackFromJson(JsonElement item)
-    {
-        Track track = new();
-
-        track.SongId = item.GetProperty("id").GetString();
-        track.SongName = item.GetProperty("name").GetString();
-        track.AlbumName = item.GetProperty("album").GetProperty("name").GetString();
-
-        foreach (JsonElement cover in item.GetProperty("album").GetProperty("images").EnumerateArray())
-            track.CoverSizesUrl.Add(cover.GetProperty("url").GetString());
-
-        foreach (JsonElement artist in item.GetProperty("artists").EnumerateArray())
-            track.ArtistsNames.Add(artist.GetProperty("name").GetString());
-
-        return track;
-    }
-
-    public async Task<Track> GetCurrentlyPlaying()
+    public async Task<Track> GetCurrentlyPlayingAsync()
     {
         using HttpResponseMessage httpResponse = await _httpClient.GetAsync(_API_ADDRESS + "/me/player/currently-playing");
 
@@ -167,7 +150,7 @@ public class Spotify
             return new Track().MakeThisDummy();
     }
 
-    public async Task<List<Track>> SearchTracks(string searchFor)
+    public async Task<List<Track>> SearchTracksAsync(string searchFor)
     {
         KeyValuePair<string, string?>[] parameters = new[]
         {
@@ -187,6 +170,23 @@ public class Spotify
             searchedTracks.Add(GetTrackFromJson(item));
 
         return searchedTracks;
+    }
+
+    private Track GetTrackFromJson(JsonElement item)
+    {
+        Track track = new();
+
+        track.SongId = item.GetProperty("id").GetString();
+        track.SongName = item.GetProperty("name").GetString();
+        track.AlbumName = item.GetProperty("album").GetProperty("name").GetString();
+
+        foreach (JsonElement cover in item.GetProperty("album").GetProperty("images").EnumerateArray())
+            track.CoverSizesUrl.Add(cover.GetProperty("url").GetString());
+
+        foreach (JsonElement artist in item.GetProperty("artists").EnumerateArray())
+            track.ArtistsNames.Add(artist.GetProperty("name").GetString());
+
+        return track;
     }
 }
 

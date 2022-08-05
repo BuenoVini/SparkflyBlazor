@@ -51,7 +51,7 @@
         {
             try
             {
-                currentTrack = await spotify.GetCurrentlyPlaying();
+                currentTrack = await spotify.GetCurrentlyPlayingAsync();
                 //nextTrack = await spotify.GetNextPlaying();
 
                 await InvokeAsync(StateHasChanged);
@@ -61,7 +61,7 @@
                 try
                 {
                     if (e.StatusCode == HttpStatusCode.Unauthorized)
-                        await spotify.RefreshAccessToken();
+                        await spotify.RefreshAccessTokenAsync();
                     else
                         NavigationManager.NavigateTo("/unhandled-error");
                 }
