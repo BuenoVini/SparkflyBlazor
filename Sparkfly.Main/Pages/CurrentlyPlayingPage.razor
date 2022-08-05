@@ -8,6 +8,7 @@
 
 @inject Spotify spotify
 @inject NavigationManager NavigationManager
+@inject RequestAPIHandler ApiHandler
 
 <PageTitle>Listening to @currentTrack?.ArtistsNames[0]</PageTitle>
 
@@ -58,17 +59,7 @@
             }
             catch (HttpRequestException e)
             {
-                try
-                {
-                    if (e.StatusCode == HttpStatusCode.Unauthorized)
-                        await spotify.RefreshAccessTokenAsync();
-                    else
-                        NavigationManager.NavigateTo("/unhandled-error");
-                }
-                catch (HttpRequestException)
-                {
-                    NavigationManager.NavigateTo("/unhandled-error");
-                }
+                await ApiHandler.HandleHttpRequestAsync(e, spotify, NavigationManager);
             }
         }, null, TimeSpan.Zero, TimeSpan.FromSeconds(15));
     }

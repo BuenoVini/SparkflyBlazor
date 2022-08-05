@@ -6,6 +6,7 @@
 
 @inject Spotify spotify
 @inject NavigationManager NavigationManager
+@inject RequestAPIHandler ApiHandler
 
 <MudStack Class="d-flex flex-column flex-grow-1 gap-4">
     <form @onsubmit="SearchTracks">
@@ -36,17 +37,7 @@
         }
         catch (HttpRequestException e)
         {
-            try
-            {
-                if (e.StatusCode == HttpStatusCode.Unauthorized)
-                    await spotify.RefreshAccessTokenAsync();
-                else
-                    NavigationManager.NavigateTo("/unhandled-error");
-            }
-            catch (HttpRequestException)
-            {
-                NavigationManager.NavigateTo("/unhandled-error");
-            }
+            await ApiHandler.HandleHttpRequestAsync(e, spotify, NavigationManager);
         }
     }
 }
