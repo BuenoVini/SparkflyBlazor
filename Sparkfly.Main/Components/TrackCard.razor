@@ -1,4 +1,7 @@
 ﻿@using Sparkfly.Main.Data
+@using Sparkfly.Main.Services
+
+@inject VotingHandler VotingHandler
 
 <MudPaper Class="pa-4">
     <MudStack Row="true">
@@ -13,7 +16,7 @@
         <MudSpacer />
 
         <div>
-            <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
+            <MudIconButton OnClick="@EnqueueVoteAsync" Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
         </div>
     </MudStack>
 </MudPaper>
@@ -21,4 +24,6 @@
 @code {
     private const int MAX_CHARS = 26;
     [Parameter, EditorRequired] public Track Track { get; set; } = new();
+
+    private async Task EnqueueVoteAsync() => await VotingHandler.EnqueueVoteAsync(Track);
 }

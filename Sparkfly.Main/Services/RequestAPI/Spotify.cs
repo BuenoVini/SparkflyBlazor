@@ -172,6 +172,13 @@ public class Spotify
         return searchedTracks;
     }
 
+    public async Task AddToPlaybackQueueAsync(Track track)
+    {
+        using HttpResponseMessage httpResponse = await _httpClient.PostAsync(_API_ADDRESS + "/me/player/queue" + QueryString.Create("uri", $"spotify:track:{track.SongId}"), null);
+
+        httpResponse.EnsureSuccessStatusCode();
+    }
+
     private Track GetTrackFromJson(JsonElement item)
     {
         Track track = new();

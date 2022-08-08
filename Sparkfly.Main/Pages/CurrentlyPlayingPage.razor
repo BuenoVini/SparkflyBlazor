@@ -3,12 +3,14 @@
 @using Sparkfly.Main.Components
 @using Sparkfly.Main.Data
 @using Sparkfly.Main.RequestAPI
+@using Sparkfly.Main.Services
 
 @implements IDisposable
 
 @inject Spotify spotify
 @inject NavigationManager NavigationManager
 @inject RequestAPIHandler ApiHandler
+@inject VotingHandler VotingHandler
 
 <PageTitle>Listening to @currentTrack?.ArtistsNames[0]</PageTitle>
 
@@ -31,20 +33,20 @@
 
         <MudText Class="mt-4" Align="Align.Center" Typo="Typo.h6">Playing next: </MudText>
 
-        <TrackCard Track="@currentTrack" />
+        @if (nextTrack is not null)
+        {
+            <TrackCard Track="@nextTrack" />
+        }
     }
 
-    @*@if (nextTrack is not null)
-    {
-        
-    }*@
+
 
 </MudStack>
 
 @code {
     private Timer? timer;
     private Track? currentTrack;
-    //private Track? nextTrack;
+    private Track? nextTrack;
 
     protected override void OnInitialized()
     {
@@ -53,7 +55,7 @@
             try
             {
                 currentTrack = await spotify.GetCurrentlyPlayingAsync();
-                //nextTrack = await spotify.GetNextPlaying();
+                nextTrack = (await VotingHandler.PeekQueueAsync())?.TrackVoted;
 
                 await InvokeAsync(StateHasChanged);
             }

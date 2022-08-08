@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using MudBlazor.Services;
 using Sparkfly.Main.Data;
 using Sparkfly.Main.RequestAPI;
+using Sparkfly.Main.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<Spotify>();
 builder.Services.AddScoped<RequestAPIHandler>();
+builder.Services.AddScoped<VotingHandler>();
 builder.Services.AddMudServices();
 
 var app = builder.Build();

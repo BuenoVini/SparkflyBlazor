@@ -1,7 +1,25 @@
 ﻿@page "/queue"
+@using Sparkfly.Main.Components
+@using Sparkfly.Main.Data
+@using Sparkfly.Main.Services
 
-<h3>Queue</h3>
+@inject VotingHandler VotingHandler
+
+<MudStack>
+    <h3>Queue</h3>
+
+    @if (votes is not null)
+    {
+        @foreach (var vote in votes)
+        {
+            <TrackCard Track="vote.TrackVoted" />
+        }
+    }
+
+</MudStack>
 
 @code {
+    private Queue<Vote>? votes;
 
+    protected override async Task OnInitializedAsync() => votes = await VotingHandler.GetQueueAsync();
 }
