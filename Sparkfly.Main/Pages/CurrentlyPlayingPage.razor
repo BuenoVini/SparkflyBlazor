@@ -2,15 +2,12 @@
 
 @using Sparkfly.Main.Components
 @using Sparkfly.Main.Data
-@using Sparkfly.Main.RequestAPI
 @using Sparkfly.Main.Services
 
 @implements IDisposable
 
-@inject Spotify spotify
 @inject NavigationManager NavigationManager
-@inject RequestAPIHandler ApiHandler
-@inject VotingHandler VotingHandler
+@inject SparkflyManager Sparkfly
 
 <PageTitle>Listening to @currentTrack?.ArtistsNames[0]</PageTitle>
 
@@ -54,14 +51,14 @@
         {
             try
             {
-                currentTrack = await spotify.GetCurrentlyPlayingAsync();
-                nextTrack = (await VotingHandler.PeekQueueAsync())?.TrackVoted;
+                currentTrack = await Sparkfly.SpotifyGetCurrentlyPlayingAsync();
+                nextTrack = (await Sparkfly.PeekVotingQueueAsync())?.TrackVoted;
 
                 await InvokeAsync(StateHasChanged);
             }
             catch (HttpRequestException e)
             {
-                await ApiHandler.HandleHttpRequestAsync(e, spotify, NavigationManager);
+                await Sparkfly.HandleHttpExceptionAsync(e);
             }
         }, null, TimeSpan.Zero, TimeSpan.FromSeconds(15));
     }

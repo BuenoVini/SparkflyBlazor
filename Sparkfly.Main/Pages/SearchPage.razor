@@ -1,12 +1,11 @@
 ﻿@page "/search"
 
 @using Sparkfly.Main.Components
-@using Sparkfly.Main.RequestAPI
+@using Sparkfly.Main.Services
 @using Sparkfly.Main.Data
 
-@inject Spotify spotify
+@inject SparkflyManager Sparkfly
 @inject NavigationManager NavigationManager
-@inject RequestAPIHandler ApiHandler
 
 <MudStack Class="d-flex flex-column flex-grow-1 gap-4">
     <form @onsubmit="SearchTracks">
@@ -33,11 +32,11 @@
         try
         {
             if (UserInput is not null)
-                SearchedTracks = await spotify.SearchTracksAsync(UserInput);
+                SearchedTracks = await Sparkfly.SpotifySearchTracksAsync(UserInput);
         }
         catch (HttpRequestException e)
         {
-            await ApiHandler.HandleHttpRequestAsync(e, spotify, NavigationManager);
+            await Sparkfly.HandleHttpExceptionAsync(e);
         }
     }
 }

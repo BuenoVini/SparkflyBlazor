@@ -3,7 +3,7 @@
 @using Sparkfly.Main.Data
 @using Sparkfly.Main.Services
 
-@inject VotingHandler VotingHandler
+@inject SparkflyManager Sparkfly
 
 <MudStack>
     <h3>Queue</h3>
@@ -21,5 +21,5 @@
 @code {
     private Queue<Vote>? votes;
 
-    protected override async Task OnInitializedAsync() => votes = await VotingHandler.GetQueueAsync();
+    protected override async Task OnInitializedAsync() => votes = await Sparkfly.GetQueueAsync();
 }

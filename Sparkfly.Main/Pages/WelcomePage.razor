@@ -1,7 +1,8 @@
 ﻿@page "/welcome"
 
-@using Sparkfly.Main.RequestAPI
-@inject Spotify spotify
+@using Sparkfly.Main.Services
+
+@inject SparkflyManager Sparkfly
 
 <PageTitle>Welcome to Sparkfly!</PageTitle>
 
@@ -11,12 +12,12 @@
     <MudButton Variant="Variant.Filled" Color="Color.Primary">Let Me In!</MudButton>
     
     <MudText Class="mt-16" Typo="Typo.h5" Align="Align.Center">If you are the host...</MudText>
-    <MudButton OnClick="@UserSignInSpotify" Variant="Variant.Filled" Color="Color.Success">Sign in with Spotify</MudButton>
+    <MudButton OnClick="@SpotifySignInAsync" Variant="Variant.Filled" Color="Color.Success">Sign in with Spotify</MudButton>
 </MudStack>
 
 
 @code {
     private string? partyCode;
 
-    private async Task UserSignInSpotify() => await spotify.RequestUserAuthorizationAsync();
+    private async Task SpotifySignInAsync() => await Sparkfly.SpotifySignInAsync();
 }

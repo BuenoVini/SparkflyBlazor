@@ -71,7 +71,7 @@ public class Spotify
         if (stateCode == (await _currentSession.GetAsync<string>("state")).Value)
             _authCode = authCode;
         else
-            throw new RequestAPIException("Invalid state code returned by the server.");
+            throw new RequestAPIException("Invalid state code returned by the server.");    // TODO: make this catchable
     }
 
     public async Task RequestAccessAndRefreshTokensAsync(string authCode, string stateCode)

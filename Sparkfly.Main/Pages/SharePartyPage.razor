@@ -1,9 +1,9 @@
 ﻿@page "/share-party"
 @page "/share-party/{code}/{state}"
 
-@using Sparkfly.Main.RequestAPI
+@using Sparkfly.Main.Services
 
-@inject Spotify spotify
+@inject SparkflyManager Sparkfly
 
 <h3>Share the Party Code!</h3>
 
@@ -21,7 +21,7 @@
         if (firstRender)
         {
             if (Code is not null && State is not null)
-                await spotify.RequestAccessAndRefreshTokensAsync(Code, State);
+                await Sparkfly.SpotifyRequestTokensAsync(Code, State);
         }
     }
 }
