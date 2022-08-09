@@ -8,6 +8,7 @@ namespace Sparkfly.Main.Services;
 
 public class SparkflyManager
 {
+    #region Attributes and Constructor
     private readonly Spotify _spotify;  // TODO: change to SpotifyHandler
     private readonly VotingHandler _votingHandler;
 
@@ -20,27 +21,30 @@ public class SparkflyManager
         _currentSession = protectedSession;
 
         _spotify = new (_navigationManager, _currentSession);
-        _votingHandler = new (_currentSession, _spotify);   // TODO: remove spotify from constructor
+        _votingHandler = new (_currentSession);
     }
+    #endregion
 
     #region Spotify Methods
     public async Task SpotifySignInAsync() => await _spotify.RequestUserAuthorizationAsync();
-
     public async Task SpotifyRequestTokensAsync(string code, string state) => await _spotify.RequestAccessAndRefreshTokensAsync(code, state);
-
     public async Task SpotifyRefreshTokenAsync() => await _spotify.RefreshAccessTokenAsync();
-
     public async Task<Track> SpotifyGetCurrentlyPlayingAsync() => await _spotify.GetCurrentlyPlayingAsync();
-
     public async Task<List<Track>> SpotifySearchTracksAsync(string searchFor) => await _spotify.SearchTracksAsync(searchFor);
     #endregion
 
     #region Queue Methods
+    public async Task<Queue<Vote>?> GetVotingQueueAsync() => await _votingHandler.GetQueueAsync();
     public async Task<Vote?> PeekVotingQueueAsync() => await _votingHandler.PeekQueueAsync();
-
-    public async Task<Queue<Vote>?> GetQueueAsync() => await _votingHandler.GetQueueAsync();
-
     public async Task EnqueueVoteAsync(Track track) => await _votingHandler.EnqueueVoteAsync(track);
+
+    public async Task DequeueVoteAsync()
+    {
+        Track? nextTrack = await _votingHandler.DequeueVoteAsync();
+
+        if (nextTrack is not null)
+            await _spotify.AddToPlaybackQueueAsync(nextTrack);
+    }
     #endregion
 
     #region API Methods

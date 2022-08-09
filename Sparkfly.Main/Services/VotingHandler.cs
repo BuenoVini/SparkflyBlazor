@@ -7,16 +7,14 @@ namespace Sparkfly.Main.Services;
 public class VotingHandler
 {
     private readonly ProtectedSessionStorage _currentSession;
-    private readonly Spotify _spotify;
 
-    public VotingHandler(ProtectedSessionStorage currentSession, Spotify spotify)
+    public VotingHandler(ProtectedSessionStorage currentSession)
     {
         _currentSession = currentSession;
-        _spotify = spotify;
     }
 
+    private async Task StoreQueueAsync(Queue<Vote> votingQueue) => await _currentSession.SetAsync("voting_queue", votingQueue);
     public async Task<Queue<Vote>?> GetQueueAsync() => (await _currentSession.GetAsync<Queue<Vote>>("voting_queue")).Value;
-    private async Task SetQueueAsync(Queue<Vote> votingQueue) => await _currentSession.SetAsync("voting_queue", votingQueue);
     public async Task<Vote?> PeekQueueAsync() => (await GetQueueAsync())?.Peek();
 
     public async Task EnqueueVoteAsync(Track trackVoted)
@@ -25,21 +23,19 @@ public class VotingHandler
         Queue<Vote>? votingQueue = await GetQueueAsync();
 
         votingQueue ??= new Queue<Vote>();
-        votingQueue.Enqueue(new Vote { TrackVoted = trackVoted, ClientName = clientName });
+        votingQueue.Enqueue(new Vote { VotedTrack = trackVoted, ClientName = clientName });
 
-        await SetQueueAsync(votingQueue);
+        await StoreQueueAsync(votingQueue);
     }
 
-    public async Task DequeueVoteAsync()
+    public async Task<Track?> DequeueVoteAsync()
     {
         Queue<Vote>? votingQueue = await GetQueueAsync();
-        Track? track = votingQueue?.Dequeue().TrackVoted;
+        Track? track = votingQueue?.Dequeue().VotedTrack;
 
         if (votingQueue is not null && track is not null)
-        {
-            await _spotify.AddToPlaybackQueueAsync(track);
+            await StoreQueueAsync(votingQueue);
 
-            await SetQueueAsync(votingQueue);
-        }
+        return track;
     }
 }

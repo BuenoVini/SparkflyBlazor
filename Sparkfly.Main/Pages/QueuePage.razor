@@ -12,7 +12,7 @@
     {
         @foreach (var vote in votes)
         {
-            <TrackCard Track="vote.TrackVoted" />
+            <TrackCard Track="vote.VotedTrack" />
         }
     }
 
@@ -21,5 +21,5 @@
 @code {
     private Queue<Vote>? votes;
 
-    protected override async Task OnInitializedAsync() => votes = await Sparkfly.GetQueueAsync();
+    protected override async Task OnInitializedAsync() => votes = await Sparkfly.GetVotingQueueAsync();
 }

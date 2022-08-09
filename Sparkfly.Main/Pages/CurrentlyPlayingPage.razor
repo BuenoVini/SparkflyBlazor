@@ -52,7 +52,7 @@
             try
             {
                 currentTrack = await Sparkfly.SpotifyGetCurrentlyPlayingAsync();
-                nextTrack = (await Sparkfly.PeekVotingQueueAsync())?.TrackVoted;
+                nextTrack = (await Sparkfly.PeekVotingQueueAsync())?.VotedTrack;
 
                 await InvokeAsync(StateHasChanged);
             }
