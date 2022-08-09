@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Sparkfly.Main.Data;
-using Sparkfly.Main.RequestAPI;
+using Sparkfly.Main.Services.RequestApi;
 using System.Net;
 
 namespace Sparkfly.Main.Services;
@@ -9,8 +9,8 @@ namespace Sparkfly.Main.Services;
 public class SparkflyManager
 {
     #region Attributes and Constructor
-    private readonly Spotify _spotify;  // TODO: change to SpotifyHandler
-    private readonly VotingHandler _votingHandler;
+    private readonly SpotifyManager _spotify;
+    private readonly VotingManager _votingHandler;
 
     private readonly NavigationManager _navigationManager;
     private readonly ProtectedSessionStorage _currentSession;

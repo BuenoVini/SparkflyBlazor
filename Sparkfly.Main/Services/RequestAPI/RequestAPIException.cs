@@ -1,8 +1,8 @@
-﻿namespace Sparkfly.Main.RequestAPI;
+﻿namespace Sparkfly.Main.Services.RequestApi;
 
-public class RequestAPIException : Exception
+public class RequestApiException : Exception
 {
-    public RequestAPIException() { }
-    public RequestAPIException(string message) : base(message) { }
-    public RequestAPIException(string message, Exception innerException) : base(message, innerException) { }
+    public RequestApiException() { }
+    public RequestApiException(string message) : base(message) { }
+    public RequestApiException(string message, Exception innerException) : base(message, innerException) { }
 }

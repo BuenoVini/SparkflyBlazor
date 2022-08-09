@@ -6,9 +6,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
-namespace Sparkfly.Main.RequestAPI;
+namespace Sparkfly.Main.Services.RequestApi;
 
-public class Spotify
+public class SpotifyManager
 {
     private const string _API_ADDRESS = "https://api.spotify.com/v1";
     private const string _REDIRECT_URI = "https://localhost:5001/share-party";
@@ -23,15 +23,15 @@ public class Spotify
 
     private string? _authCode;
 
-    static Spotify()
+    static SpotifyManager()
     {
         string? clientId = Environment.GetEnvironmentVariable("SPOTIFY_CLIENT_ID");
         string? clientSecret = Environment.GetEnvironmentVariable("SPOTIFY_CLIENT_SECRET");
 
         if (clientId is null)
-            throw new RequestAPIException("Environment Variable 'SPOTIFY_CLIENT_ID' was not found.");
+            throw new RequestApiException("Environment Variable 'SPOTIFY_CLIENT_ID' was not found.");
         if (clientSecret is null)
-            throw new RequestAPIException("Environment Variable 'SPOTIFY_CLIENT_SECRET' was not found.");
+            throw new RequestApiException("Environment Variable 'SPOTIFY_CLIENT_SECRET' was not found.");
 
         _CLIENT_ID = clientId;
         _CLIENT_SECRET = clientSecret;
@@ -39,7 +39,7 @@ public class Spotify
         _httpClient = new();
     }
 
-    public Spotify(NavigationManager navigationManager, ProtectedSessionStorage session)
+    public SpotifyManager(NavigationManager navigationManager, ProtectedSessionStorage session)
     {
         _navigationManager = navigationManager;
         _currentSession = session;
@@ -71,7 +71,7 @@ public class Spotify
         if (stateCode == (await _currentSession.GetAsync<string>("state")).Value)
             _authCode = authCode;
         else
-            throw new RequestAPIException("Invalid state code returned by the server.");    // TODO: make this catchable
+            throw new RequestApiException("Invalid state code returned by the server.");    // TODO: make this catchable
     }
 
     public async Task RequestAccessAndRefreshTokensAsync(string authCode, string stateCode)
@@ -99,12 +99,12 @@ public class Spotify
         if (accessToken is not null)
             await _currentSession.SetAsync("access_token", accessToken);
         else
-            throw new RequestAPIException("Returned access token is null.");
+            throw new RequestApiException("Returned access token is null.");
 
         if (refreshToken is not null)
             await _currentSession.SetAsync("refresh_token", refreshToken);
         else
-            throw new RequestAPIException("Returned refresh token is null.");
+            throw new RequestApiException("Returned refresh token is null.");
 
         SetBearerAuthHeader(accessToken);
     }
@@ -130,7 +130,7 @@ public class Spotify
         if (accessToken is not null)
             await _currentSession.SetAsync("access_token", accessToken);
         else
-            throw new RequestAPIException("Returned access token is null.");
+            throw new RequestApiException("Returned access token is null.");
 
         SetBearerAuthHeader(accessToken);
     }

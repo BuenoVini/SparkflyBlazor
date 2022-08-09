@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Sparkfly.Main.Data;
-using Sparkfly.Main.RequestAPI;
 
 namespace Sparkfly.Main.Services;
 
-public class VotingHandler
+public class VotingManager
 {
     private readonly ProtectedSessionStorage _currentSession;
 
-    public VotingHandler(ProtectedSessionStorage currentSession)
+    public VotingManager(ProtectedSessionStorage currentSession)
     {
         _currentSession = currentSession;
     }
