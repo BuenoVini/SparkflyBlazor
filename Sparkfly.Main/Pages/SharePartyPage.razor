@@ -21,7 +21,10 @@
         if (firstRender)
         {
             if (Code is not null && State is not null)
+            {
                 await Sparkfly.SpotifyRequestTokensAsync(Code, State);
+                Sparkfly.StartTimer();
+            }
         }
     }
 }

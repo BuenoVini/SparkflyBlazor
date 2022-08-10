@@ -12,19 +12,18 @@ public class VotingManager
         _currentSession = currentSession;
     }
 
-    private async Task StoreQueueAsync(Queue<Vote> votingQueue) => await _currentSession.SetAsync("voting_queue", votingQueue);
+    private async Task SetQueueAsync(Queue<Vote> votingQueue) => await _currentSession.SetAsync("voting_queue", votingQueue);
     public async Task<Queue<Vote>?> GetQueueAsync() => (await _currentSession.GetAsync<Queue<Vote>>("voting_queue")).Value;
-    public async Task<Vote?> PeekQueueAsync() => (await GetQueueAsync())?.Peek();
 
-    public async Task EnqueueVoteAsync(Track trackVoted)
+    public async Task EnqueueVoteAsync(Track votedTrack)
     {
         string? clientName = (await _currentSession.GetAsync<string>("client_name")).Value;
         Queue<Vote>? votingQueue = await GetQueueAsync();
 
         votingQueue ??= new Queue<Vote>();
-        votingQueue.Enqueue(new Vote { VotedTrack = trackVoted, ClientName = clientName });
+        votingQueue.Enqueue(new Vote(votedTrack, clientName));
 
-        await StoreQueueAsync(votingQueue);
+        await SetQueueAsync(votingQueue);
     }
 
     public async Task<Track?> DequeueVoteAsync()
@@ -33,7 +32,7 @@ public class VotingManager
         Track? track = votingQueue?.Dequeue().VotedTrack;
 
         if (votingQueue is not null && track is not null)
-            await StoreQueueAsync(votingQueue);
+            await SetQueueAsync(votingQueue);
 
         return track;
     }

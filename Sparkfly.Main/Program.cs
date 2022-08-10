@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<SparkflyManager>();
+builder.Services.AddSingleton<TimerManager>();
 builder.Services.AddMudServices();
 
 var app = builder.Build();
