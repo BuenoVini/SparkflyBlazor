@@ -47,21 +47,19 @@
 
     protected override void OnInitialized()
     {
-        timer = new Timer(async _ =>
-        {
-            try
-            {
-                currentTrack = await Sparkfly.SpotifyGetCurrentlyPlayingAsync();
-                nextTrack = (await Sparkfly.GetVotingQueueAsync())?.Peek().VotedTrack;
+        Sparkfly.SubscribeToTimerEvent(UpdateUi);   //delegate (object source, EventArgs args) { InvokeAsync(StateHasChanged); };
 
-                await InvokeAsync(StateHasChanged);
-            }
-            catch (HttpRequestException e)
-            {
-                await Sparkfly.HandleHttpExceptionAsync(e);
-            }
-        }, null, TimeSpan.Zero, TimeSpan.FromSeconds(15));
+        UpdateUi(this, EventArgs.Empty);
     }
 
-    public void Dispose() => timer?.Dispose();  // TODO: make async ??
+    private async void UpdateUi(object source, EventArgs args)
+    {
+        currentTrack = await Sparkfly.SpotifyGetCurrentlyPlayingAsync();    // TODO: cache this response
+        nextTrack = (await Sparkfly.PeekVotingQueue())?.VotedTrack;
+
+        // TODO: check when to tell state has changed (only when the tracks are updated)
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => Sparkfly.UnsubscribeToTimerEvent(UpdateUi);
 }

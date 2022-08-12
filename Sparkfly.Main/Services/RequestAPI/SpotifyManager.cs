@@ -144,10 +144,15 @@ public class SpotifyManager
         if (httpResponse.StatusCode == HttpStatusCode.OK)
         {
             using JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
-            return GetTrackFromJson(jsonResponse.RootElement.GetProperty("item"));
+
+            Track currentTrack = GetTrackFromJson(jsonResponse.RootElement.GetProperty("item"));
+
+            currentTrack.ProgressMs = jsonResponse.RootElement.GetProperty("progress_ms").GetInt32();
+
+            return currentTrack;
         }
         else
-            return new Track().MakeThisDummy();
+            return new Track().MakeThisDummy(); // TODO: let the Main Manager make the dummy and return null instead
     }
 
     public async Task<List<Track>> SearchTracksAsync(string searchFor)
@@ -186,6 +191,7 @@ public class SpotifyManager
         track.SongId = item.GetProperty("id").GetString();
         track.SongName = item.GetProperty("name").GetString();
         track.AlbumName = item.GetProperty("album").GetProperty("name").GetString();
+        track.DurationMs = item.GetProperty("duration_ms").GetInt32();
 
         foreach (JsonElement cover in item.GetProperty("album").GetProperty("images").EnumerateArray())
             track.CoverSizesUrl.Add(cover.GetProperty("url").GetString());
