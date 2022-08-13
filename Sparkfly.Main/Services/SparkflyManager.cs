@@ -33,14 +33,16 @@ public class SparkflyManager
     public async Task SpotifySignInAsync() => await _spotify.RequestUserAuthorizationAsync();
     public async Task SpotifyRequestTokensAsync(string code, string state) => await _spotify.RequestAccessAndRefreshTokensAsync(code, state);
     public async Task SpotifyRefreshTokenAsync() => await _spotify.RefreshAccessTokenAsync();
-    public async Task<Track> SpotifyGetCurrentlyPlayingAsync() => await _spotify.GetCurrentlyPlayingAsync();    // TODO: make here the Dummy
+    public async Task<Track> GetCurrentlyPlayingAsync() => (await _currentSession.GetAsync<Track>("currently_playing")).Value ?? new Track().MakeThisDummy();
+    private async Task SetCurrentlyPlayingAsync(Track track) => await _currentSession.SetAsync("currently_playing", track);
+    private async Task<Track> SpotifyGetCurrentlyPlayingAsync() => await _spotify.GetCurrentlyPlayingAsync();    // TODO: make here the Dummy
     public async Task<List<Track>> SpotifySearchTracksAsync(string searchFor) => await _spotify.SearchTracksAsync(searchFor);
     private async Task SpotifyAddToPlaybackQueueAsync(Track track) => await _spotify.AddToPlaybackQueueAsync(track);
     #endregion
 
     #region Queue Methods
     public async Task<Queue<Vote>?> GetVotingQueueAsync() => await _votingManager.GetQueueAsync();
-    public async Task DequeueVoteAsync() => await _votingManager.DequeueVoteAsync();
+    public async Task<Track?> DequeueVoteAsync() => await _votingManager.DequeueVoteAsync();
     public async Task<Vote?> PeekVotingQueue()
     {
         try
@@ -86,15 +88,21 @@ public class SparkflyManager
 
     private async void OnTimerElapsedAsync(object source, EventArgs args)
     {
-        Track currentTrack = await SpotifyGetCurrentlyPlayingAsync();
+        Track newestTrack = await SpotifyGetCurrentlyPlayingAsync();
         Track? nextTrack = (await PeekVotingQueue())?.VotedTrack;
+        Track currentTrack = await GetCurrentlyPlayingAsync();
 
-        if (nextTrack is not null && (currentTrack.DurationMs - currentTrack.ProgressMs) < (_loopPeriodInSeconds * 1000))
+        if (newestTrack.SongId != currentTrack.SongId)
         {
-            await SpotifyAddToPlaybackQueueAsync(nextTrack);
+            await SetCurrentlyPlayingAsync(newestTrack);
+
+            if (newestTrack.SongId == nextTrack?.SongId)
+                nextTrack = await DequeueVoteAsync();
         }
-        else if (currentTrack.SongId == nextTrack?.SongId)
-            await DequeueVoteAsync();
+
+        if (nextTrack is not null && (newestTrack.DurationMs - newestTrack.ProgressMs) < (_loopPeriodInSeconds * 1000))
+            await SpotifyAddToPlaybackQueueAsync(nextTrack);
+
         // TODO: else add a recommended track
     }
     #endregion

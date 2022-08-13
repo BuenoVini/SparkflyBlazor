@@ -54,11 +54,14 @@
 
     private async void UpdateUi(object source, EventArgs args)
     {
-        currentTrack = await Sparkfly.SpotifyGetCurrentlyPlayingAsync();    // TODO: cache this response
+        Track newestTrack = await Sparkfly.GetCurrentlyPlayingAsync();
         nextTrack = (await Sparkfly.PeekVotingQueue())?.VotedTrack;
 
-        // TODO: check when to tell state has changed (only when the tracks are updated)
-        await InvokeAsync(StateHasChanged);
+        if (newestTrack.SongId != currentTrack?.SongId)
+        {
+            currentTrack = newestTrack;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     public void Dispose() => Sparkfly.UnsubscribeToTimerEvent(UpdateUi);
