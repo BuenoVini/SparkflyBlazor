@@ -8,7 +8,7 @@ public class Track
     public string? AlbumName { get; set; }
     public int DurationMs { get; set; }
     public int? ProgressMs { get; set; }
-    public List<string?> CoverSizesUrl { get; set; } = new();
+    public List<string?> CoverSizesUrl { get; set; } = new();   // TODO: make this a string[3]
     public List<string?> ArtistsNames { get; set; } = new();
 
     public Track MakeThisDummy()

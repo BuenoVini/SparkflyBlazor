@@ -18,8 +18,12 @@
     {
         @foreach (Track track in SearchedTracks)
         {
-            <TrackCard Track="track" />
+            <TrackCard Track="track" OnClickCallback="EnqueueVoteAsync" BtnFunc="TrackCard.BtnFunctionality.Add"/>
         }
+    }
+    else
+    {
+        <TrackCard Track="new Track().MakeThisDummy()" />
     }
 </MudStack>
 
@@ -27,9 +31,11 @@
     public string? UserInput { get; set; }
     public List<Track>? SearchedTracks { get; set; }
 
+    private async Task EnqueueVoteAsync(Track track) => await Sparkfly.EnqueueVoteAsync(track);
+
     private async Task SearchTracks()
     {
-        try
+        try     // TODO: move the try-catch to SparkflyManager
         {
             if (UserInput is not null)
                 SearchedTracks = await Sparkfly.SpotifySearchTracksAsync(UserInput);

@@ -10,6 +10,8 @@ namespace Sparkfly.Main.Services;
 public class SparkflyManager
 {
     #region Attributes and Constructor
+    public string ClientName { get; set; } = "NO_NAME";
+
     private readonly SpotifyManager _spotify;
     private readonly VotingManager _votingManager;
     private readonly TimerManager _timerManager;
@@ -40,10 +42,12 @@ public class SparkflyManager
     private async Task SpotifyAddToPlaybackQueueAsync(Track track) => await _spotify.AddToPlaybackQueueAsync(track);
     #endregion
 
-    #region Queue Methods
+    #region Voting Queue Methods
     public async Task<Queue<Vote>?> GetVotingQueueAsync() => await _votingManager.GetQueueAsync();
-    public async Task<Track?> DequeueVoteAsync() => await _votingManager.DequeueVoteAsync();
-    public async Task<Vote?> PeekVotingQueue()
+    public async Task EnqueueVoteAsync(Track track) => await _votingManager.EnqueueVoteAsync(track, ClientName);
+    public async Task<Track?> DequeueVoteAsync() => await _votingManager.DequeueVoteAsync();    // TODO: change return type to Vote
+    public async Task<bool> RemoveVoteAsync(Track track) => await _votingManager.RemoveVoteAsync(track, ClientName);
+    public async Task<Vote?> PeekVotingQueue()  // TODO: use TryPeek instead
     {
         try
         {
@@ -53,14 +57,6 @@ public class SparkflyManager
         {
             return null;
         }
-    }
-
-    public async Task EnqueueVoteAsync(Track track)
-    {
-        //if ((await GetVotingQueueAsync()) is null)  // TODO: check for !Any()
-        //    await SpotifyAddToPlaybackQueueAsync(track);
-
-        await _votingManager.EnqueueVoteAsync(track);
     }
     #endregion
 

@@ -12,7 +12,15 @@
     {
         @foreach (var vote in votes)
         {
-            <TrackCard Track="vote.VotedTrack" />
+            @if (vote.ClientName == Sparkfly.ClientName)
+            {
+                <TrackCard Track="vote.VotedTrack" OnClickCallback="@RemoveVoteAsync" BtnFunc="TrackCard.BtnFunctionality.Remove" />
+                // TODO: verify if the track is queued on Spotify already
+            }
+            else
+            {
+                <TrackCard Track="vote.VotedTrack"/>
+            }
         }
     }
 
@@ -22,4 +30,11 @@
     private Queue<Vote>? votes;
 
     protected override async Task OnInitializedAsync() => votes = await Sparkfly.GetVotingQueueAsync();
+
+    private async Task RemoveVoteAsync(Track track)
+    {
+        await Sparkfly.RemoveVoteAsync(track);
+        votes = await Sparkfly.GetVotingQueueAsync();
+        await InvokeAsync(StateHasChanged);     // NOTE: may not be necessary... see Blazor EventCallback with parameters
+    }
 }

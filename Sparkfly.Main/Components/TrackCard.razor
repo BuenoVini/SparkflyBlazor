@@ -16,14 +16,34 @@
         <MudSpacer />
 
         <div>
-            <MudIconButton OnClick="@EnqueueVoteAsync" Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
+            @switch (BtnFunc)
+            {
+                case BtnFunctionality.Add:
+                    <MudIconButton OnClick="OnButtonClick" Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
+                    break;
+
+                case BtnFunctionality.Remove:
+                    <MudIconButton OnClick="OnButtonClick" Icon="@Icons.Material.Filled.PlaylistRemove" Color="Color.Error" aria-label="remove from queue"></MudIconButton>
+                    break;
+
+                default:
+                    break;
+            }
         </div>
     </MudStack>
 </MudPaper>
 
 @code {
     private const int MAX_CHARS = 26;
-    [Parameter, EditorRequired] public Track Track { get; set; } = new();
 
-    private async Task EnqueueVoteAsync() => await Sparkfly.EnqueueVoteAsync(Track);
+    public enum BtnFunctionality { Add, Remove }
+
+    [Parameter, EditorRequired] public Track Track { get; set; } = new();
+    [Parameter] public BtnFunctionality? BtnFunc { get; set; }
+    [Parameter] public EventCallback<Track> OnClickCallback { get; set; }
+
+    private async Task OnButtonClick() => await OnClickCallback.InvokeAsync(Track);
+
+    //private async Task EnqueueVoteAsync() => await Sparkfly.EnqueueVoteAsync(Track);
+    //private async Task RemoveVoteAsync() => await Sparkfly.RemoveVoteAsync(Track);
 }
