@@ -23,7 +23,6 @@
             }
         }
     }
-
 </MudStack>
 
 @code {
@@ -35,6 +34,5 @@
     {
         await Sparkfly.RemoveVoteAsync(track);
         votes = await Sparkfly.GetVotingQueueAsync();
-        await InvokeAsync(StateHasChanged);     // NOTE: may not be necessary... see Blazor EventCallback with parameters
     }
 }

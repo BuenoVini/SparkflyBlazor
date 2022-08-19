@@ -43,7 +43,4 @@
     [Parameter] public EventCallback<Track> OnClickCallback { get; set; }
 
     private async Task OnButtonClick() => await OnClickCallback.InvokeAsync(Track);
-
-    //private async Task EnqueueVoteAsync() => await Sparkfly.EnqueueVoteAsync(Track);
-    //private async Task RemoveVoteAsync() => await Sparkfly.RemoveVoteAsync(Track);
 }

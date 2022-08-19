@@ -52,6 +52,8 @@
 
     private async void UpdateUi(object source, EventArgs args)
     {
+        await Sparkfly.WaitTimerAsync();
+
         Track newestTrack = await Sparkfly.GetCurrentlyPlayingAsync();
 
         Vote? votes = (await Sparkfly.PeekVotingQueue());

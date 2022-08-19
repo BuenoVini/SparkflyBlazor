@@ -10,7 +10,11 @@ namespace Sparkfly.Main.Services;
 public class SparkflyManager
 {
     #region Attributes and Constructor
+    private const ushort MAX_REQUESTS_CONCURRENTLY = 1;
+
     public string ClientName { get; set; } = "NO_NAME";
+
+    private readonly static SemaphoreSlim s_semaphore = new(0, MAX_REQUESTS_CONCURRENTLY);
 
     private readonly SpotifyManager _spotify;
     private readonly VotingManager _votingManager;
@@ -61,6 +65,7 @@ public class SparkflyManager
     #endregion
 
     #region Timer Methods
+    public async Task WaitTimerAsync() => await s_semaphore.WaitAsync();
     public void SubscribeToTimerEvent(TimeElapsedEventHandler method) => _timerManager.TimeElapsed += method;
     public void UnsubscribeToTimerEvent(TimeElapsedEventHandler method) => _timerManager.TimeElapsed -= method;
     public void StartTimer(int seconds = 15)
@@ -100,6 +105,9 @@ public class SparkflyManager
             await SpotifyAddToPlaybackQueueAsync(nextTrack);
 
         // TODO: else add a recommended track
+
+        if (s_semaphore.CurrentCount < MAX_REQUESTS_CONCURRENTLY)
+            s_semaphore.Release();
     }
     #endregion
 
