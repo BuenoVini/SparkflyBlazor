@@ -1,0 +1,16 @@
+﻿@page "/unhandled-error"
+
+
+<MudStack>
+    <h3>Oops... something went wrong...</h3>
+    
+    <iframe src="https://giphy.com/embed/fnDZMGKjXXOdDf7aFW" width="480" height="270" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>
+    
+    @Message
+</MudStack>
+
+@code {
+    [Parameter, EditorRequired]
+    [SupplyParameterFromQuery(Name = "message")]
+    public string? Message { get; set; }
+}

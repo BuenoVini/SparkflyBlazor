@@ -1,0 +1,23 @@
+﻿@page "/welcome"
+
+@using Sparkfly.Main.Services
+
+@inject SparkflyManager Sparkfly
+
+<PageTitle>Welcome to Sparkfly!</PageTitle>
+
+<MudStack>
+    <MudText Class="mb-8" Typo="Typo.h3">Welcome to Sparkfly!</MudText>
+    <MudTextField @bind-Value="partyCode" Label="Party Code" HelperText="Type here your Party Code." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Outlined.Lock" AdornmentColor="Color.Primary"/>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary">Let Me In!</MudButton>
+    
+    <MudText Class="mt-16" Typo="Typo.h5" Align="Align.Center">If you are the host...</MudText>
+    <MudButton OnClick="@SpotifySignInAsync" Variant="Variant.Filled" Color="Color.Success">Sign in with Spotify</MudButton>
+</MudStack>
+
+
+@code {
+    private string? partyCode;
+
+    private async Task SpotifySignInAsync() => await Sparkfly.SpotifySignInAsync();
+}

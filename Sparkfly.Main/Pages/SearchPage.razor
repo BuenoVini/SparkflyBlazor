@@ -1,0 +1,48 @@
+﻿@page "/search"
+
+@using Sparkfly.Main.Components
+@using Sparkfly.Main.Services
+@using Sparkfly.Main.Data
+
+@inject SparkflyManager Sparkfly
+@inject NavigationManager NavigationManager
+
+<MudStack Class="d-flex flex-column flex-grow-1 gap-4">
+    <form @onsubmit="SearchTracks">
+        <MudContainer Class="px-0 mb-8">
+            <MudTextField class="object-top" @bind-Value="UserInput" Label="Search for a track" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Primary" />
+        </MudContainer>
+    </form>
+
+    @if (SearchedTracks is not null)
+    {
+        @foreach (Track track in SearchedTracks)
+        {
+            <TrackCard Track="track" OnClickCallback="EnqueueVoteAsync" BtnFunc="TrackCard.BtnFunctionality.Add"/>
+        }
+    }
+    else
+    {
+        <TrackCard Track="new Track().MakeThisDummy()" />
+    }
+</MudStack>
+
+@code {
+    public string? UserInput { get; set; }
+    public List<Track>? SearchedTracks { get; set; }
+
+    private async Task EnqueueVoteAsync(Track track) => await Sparkfly.EnqueueVoteAsync(track);
+
+    private async Task SearchTracks()
+    {
+        try     // TODO: move the try-catch to SparkflyManager
+        {
+            if (UserInput is not null)
+                SearchedTracks = await Sparkfly.SpotifySearchTracksAsync(UserInput);
+        }
+        catch (HttpRequestException e)
+        {
+            await Sparkfly.HandleHttpExceptionAsync(e);
+        }
+    }
+}

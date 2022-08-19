@@ -1,0 +1,69 @@
+﻿@page "/currently-playing"
+
+@using Sparkfly.Main.Components
+@using Sparkfly.Main.Data
+@using Sparkfly.Main.Services
+
+@implements IDisposable
+
+@inject NavigationManager NavigationManager
+@inject SparkflyManager Sparkfly
+
+<PageTitle>Listening to @currentTrack?.ArtistsNames[0]</PageTitle>
+
+<MudStack>
+    <MudText Align="Align.Center" Typo="Typo.h6">You are listening to:</MudText>
+
+    @if (currentTrack is not null)
+    {
+        <MudPaper Class="pa-4" MaxWidth="350px">
+            <MudImage Class="rounded-lg align-self-center" Fluid="true" Src=@currentTrack.CoverSizesUrl[(int)CoverSize.Medium] Alt="Album current playing" Elevation="25" />
+
+            <MudDivider Class="my-4" DividerType="DividerType.Middle" />
+
+            <MudText Align="Align.Center" Typo="Typo.body1">@currentTrack.SongName</MudText>
+            <MudText Align="Align.Center" Typo="Typo.body2">@currentTrack.ArtistsNames[0]</MudText>
+            <div class="d-flex justify-center mt-2">
+                <MudText Typo="Typo.caption">Suggested by <strong>SOMEONE</strong>!</MudText>
+            </div>
+        </MudPaper>
+
+        <MudText Class="mt-4" Align="Align.Center" Typo="Typo.h6">Playing next: </MudText>
+
+        @if (nextTrack is not null)
+        {
+            <TrackCard Track="@nextTrack"/>
+        }
+    }
+</MudStack>
+
+@code {
+    private Timer? timer;
+    private Track? currentTrack;
+    private Track? nextTrack;
+    private string? suggestedByClientName;
+
+    protected override void OnInitialized()
+    {
+        Sparkfly.SubscribeToTimerEvent(UpdateUi);   //delegate (object source, EventArgs args) { InvokeAsync(StateHasChanged); };
+
+        UpdateUi(this, EventArgs.Empty);
+    }
+
+    private async void UpdateUi(object source, EventArgs args)
+    {
+        Track newestTrack = await Sparkfly.GetCurrentlyPlayingAsync();
+
+        Vote? votes = (await Sparkfly.PeekVotingQueue());
+        suggestedByClientName = votes?.ClientName;
+        nextTrack = votes?.VotedTrack;
+
+        if (newestTrack.SongId != currentTrack?.SongId)
+        {
+            currentTrack = newestTrack;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose() => Sparkfly.UnsubscribeToTimerEvent(UpdateUi);
+}
