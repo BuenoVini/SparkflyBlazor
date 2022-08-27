@@ -1,0 +1,43 @@
+﻿@page "/validate"
+@page "/validate/{code}/{state}"
+@*@page "/validate/{party-id}"*@
+
+@using Sparkfly.Main.Services
+@using Sparkfly.Main.Data
+
+@inject SparkflyManager Sparkfly
+@inject NavigationManager NavManager
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "code")]
+    public string? Code { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "state")]
+    public string? State { get; set; }
+
+    //[Parameter]
+    //[SupplyParameterFromQuery(Name = "party-id")]
+    public string? PartyId { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (PartyId is not null)
+            {
+                // TODO: connect to group
+            }
+            else if (Code is not null && State is not null)
+            {
+                await Sparkfly.SpotifyRequestTokensAsync(Code, State);
+                NavManager.NavigateTo("/party");
+            }
+
+            await Sparkfly.SetThisClientAsync(new Client(Guid.NewGuid().ToString(), null));
+
+            Sparkfly.StartTimer();
+        }
+    }
+}

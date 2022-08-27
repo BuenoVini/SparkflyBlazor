@@ -10,8 +10,6 @@ namespace Sparkfly.Main.Services;
 public class SparkflyManager
 {
     #region Attributes and Constructor
-    public string ClientName { get; set; } = "NO_NAME";
-
     private readonly SpotifyManager _spotify;
     private readonly VotingManager _votingManager;
     private readonly TimerManager _timerManager;
@@ -33,7 +31,17 @@ public class SparkflyManager
 
     #region Spotify Methods
     public async Task SpotifySignInAsync() => await _spotify.RequestUserAuthorizationAsync();
-    public async Task SpotifyRequestTokensAsync(string code, string state) => await _spotify.RequestAccessAndRefreshTokensAsync(code, state);
+    public async Task SpotifyRequestTokensAsync(string code, string state)
+    {
+        try
+        {
+            await _spotify.RequestAccessAndRefreshTokensAsync(code, state);
+        }
+        catch (HttpRequestException e)
+        {
+            await HandleHttpExceptionAsync(e);
+        }
+    }
     public async Task SpotifyRefreshTokenAsync() => await _spotify.RefreshAccessTokenAsync();
     public async Task<Track> GetCurrentlyPlayingAsync() => (await _currentSession.GetAsync<Track>("currently_playing")).Value ?? new Track().MakeThisDummy();
     private async Task SetCurrentlyPlayingAsync(Track track) => await _currentSession.SetAsync("currently_playing", track);
@@ -44,10 +52,24 @@ public class SparkflyManager
 
     #region Voting Queue Methods
     public async Task<Queue<Vote>?> GetVotingQueueAsync() => await _votingManager.GetQueueAsync();
-    public async Task EnqueueVoteAsync(Track track) => await _votingManager.EnqueueVoteAsync(track, ClientName);
+    public async Task EnqueueVoteAsync(Track track)
+    {
+        string? clientId = (await GetThisClientAsync())?.ClientId;
+
+        if (clientId is not null)
+            await _votingManager.EnqueueVoteAsync(track, clientId);
+    }
     public async Task<Track?> DequeueVoteAsync() => await _votingManager.DequeueVoteAsync();    // TODO: change return type to Vote
-    public async Task<bool> RemoveVoteAsync(Track track) => await _votingManager.RemoveVoteAsync(track, ClientName);
-    public async Task<Vote?> PeekVotingQueue()  // TODO: use TryPeek instead
+    public async Task<bool> RemoveVoteAsync(Track track)
+    {
+        string? clientId = (await GetThisClientAsync())?.ClientId;
+
+        if (clientId is null)
+            return false;
+
+        return await _votingManager.RemoveVoteAsync(track, clientId);
+    }
+    public async Task<Vote?> PeekVotingQueue()  // TODO: use TryPeek instead and add Async to method name
     {
         try
         {
@@ -100,6 +122,22 @@ public class SparkflyManager
             await SpotifyAddToPlaybackQueueAsync(nextTrack);
 
         // TODO: else add a recommended track
+    }
+    #endregion
+
+    #region Client Methods
+    public async Task<Client?> GetThisClientAsync() => (await _currentSession.GetAsync<Client>("this_client")).Value;
+    public async Task SetThisClientAsync(Client client) => await _currentSession.SetAsync("this_client", client);
+    public async Task<string?> GetThisClientNameAsync() => (await GetThisClientAsync())?.ClientName;    // FIXME: remove
+    public async Task SetThisClientNameAsync(string name)
+    {
+        Client? client = await GetThisClientAsync();
+
+        if (client is not null)
+        {
+            client.ClientName = name;
+            await SetThisClientAsync(client);
+        }
     }
     #endregion
 

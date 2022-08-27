@@ -16,11 +16,11 @@ public class VotingManager
     private async Task SetQueueAsync(Queue<Vote> votingQueue) => await _currentSession.SetAsync("voting_queue", votingQueue);
     public async Task<Queue<Vote>?> GetQueueAsync() => (await _currentSession.GetAsync<Queue<Vote>>("voting_queue")).Value;
 
-    public async Task EnqueueVoteAsync(Track votedTrack, string clientName)
+    public async Task EnqueueVoteAsync(Track votedTrack, string clientId)
     {
         Queue<Vote>? votingQueue = await GetQueueAsync() ?? new Queue<Vote>();
 
-        votingQueue.Enqueue(new Vote(votedTrack, clientName));
+        votingQueue.Enqueue(new Vote(votedTrack, clientId));
 
         await SetQueueAsync(votingQueue);
     }
@@ -36,14 +36,14 @@ public class VotingManager
         return track;
     }
 
-    public async Task<bool> RemoveVoteAsync(Track track, string clientName)
+    public async Task<bool> RemoveVoteAsync(Track track, string clientId)
     {
         Queue<Vote>? votingQueue = await GetQueueAsync();
 
         if (votingQueue is null)
             return false;
 
-        votingQueue = new (votingQueue.Where(x => !(x.VotedTrack.SongId == track.SongId && x.ClientName == clientName)));
+        votingQueue = new (votingQueue.Where(x => !(x.VotedTrack.SongId == track.SongId && x.ClientId == clientId)));
 
         await SetQueueAsync(votingQueue);
 

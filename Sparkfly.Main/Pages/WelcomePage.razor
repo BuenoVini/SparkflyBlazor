@@ -3,13 +3,15 @@
 @using Sparkfly.Main.Services
 
 @inject SparkflyManager Sparkfly
+@inject NavigationManager NavManager
 
 <PageTitle>Welcome to Sparkfly!</PageTitle>
 
 <MudStack>
     <MudText Class="mb-8" Typo="Typo.h3">Welcome to Sparkfly!</MudText>
-    <MudTextField @bind-Value="partyCode" Label="Party Code" HelperText="Type here your Party Code." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Outlined.Lock" AdornmentColor="Color.Primary"/>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary">Let Me In!</MudButton>
+
+    <MudTextField @bind-Value="_partyId" Label="Party ID" HelperText="Type here the Party ID your host sent you" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Outlined.Lock" AdornmentColor="Color.Primary"/>
+    <MudButton OnClick="@GuestSignIn" Variant="Variant.Filled" Color="Color.Primary">Let Me In!</MudButton>
     
     <MudText Class="mt-16" Typo="Typo.h5" Align="Align.Center">If you are the host...</MudText>
     <MudButton OnClick="@SpotifySignInAsync" Variant="Variant.Filled" Color="Color.Success">Sign in with Spotify</MudButton>
@@ -17,7 +19,13 @@
 
 
 @code {
-    private string? partyCode;
+    private string? _partyId;
 
     private async Task SpotifySignInAsync() => await Sparkfly.SpotifySignInAsync();
+
+    private void GuestSignIn()
+    {
+        if (_partyId is not null)
+            NavManager.NavigateTo("/validate" + QueryString.Create("party_code", _partyId).ToString());
+    }
 }

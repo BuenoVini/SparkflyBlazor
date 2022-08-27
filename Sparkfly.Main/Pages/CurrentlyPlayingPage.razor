@@ -41,7 +41,7 @@
     private Timer? timer;
     private Track? currentTrack;
     private Track? nextTrack;
-    private string? suggestedByClientName;
+    //private string? suggestedByClientName;
 
     protected override void OnInitialized()
     {
@@ -55,7 +55,7 @@
         Track newestTrack = await Sparkfly.GetCurrentlyPlayingAsync();
 
         Vote? votes = (await Sparkfly.PeekVotingQueue());
-        suggestedByClientName = votes?.ClientName;
+        //suggestedByClientName = votes?.ClientId;  // FIXME
         nextTrack = votes?.VotedTrack;
 
         if (newestTrack.SongId != currentTrack?.SongId)

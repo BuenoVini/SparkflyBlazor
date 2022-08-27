@@ -11,7 +11,7 @@ namespace Sparkfly.Main.Services.RequestApi;
 public class SpotifyManager
 {
     private const string _API_ADDRESS = "https://api.spotify.com/v1";
-    private const string _REDIRECT_URI = "https://localhost:5001/share-party";
+    private const string _REDIRECT_URI = "https://localhost:5001/validate";
     private const string _SCOPES = "user-read-private user-read-currently-playing user-modify-playback-state";  // TODO: use String.Join
 
     private static readonly string _CLIENT_ID;
