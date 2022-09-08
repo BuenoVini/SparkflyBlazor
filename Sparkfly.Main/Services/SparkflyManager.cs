@@ -11,7 +11,6 @@ public class SparkflyManager
 {
     #region Attributes and Constructor
     private readonly SpotifyManager _spotifyManager;
-    private readonly VotingManager _votingManager;
     private readonly TimerManager _timerManager;
     private readonly NavigationManager _navigationManager;
     private readonly ProtectedSessionStorage _currentSession;
@@ -19,7 +18,8 @@ public class SparkflyManager
     private int _loopPeriodInSeconds = 0;
 
     private SpotifyManager.Tokens _tokens;
-    public Track CurrentlyPlayingTrack { get; set; }
+    public Track CurrentlyPlayingTrack { get; private set; }
+    public Queue<Vote> Votes { get; private set; }
 
     public SparkflyManager(NavigationManager navigationManager, ProtectedSessionStorage protectedSession, TimerManager timerManager)
     {
@@ -28,9 +28,9 @@ public class SparkflyManager
         _timerManager = timerManager;
 
         _spotifyManager = new SpotifyManager();
-        _votingManager = new VotingManager(_currentSession);
 
         CurrentlyPlayingTrack = new Track().MakeThisDummy();
+        Votes = new Queue<Vote>();
     }
     #endregion
 
@@ -54,35 +54,10 @@ public class SparkflyManager
     #endregion
 
     #region Voting Queue Methods
-    public async Task<Queue<Vote>?> GetVotingQueueAsync() => await _votingManager.GetQueueAsync();
-    public async Task EnqueueVoteAsync(Track track)
-    {
-        string? clientId = (await GetThisClientAsync())?.ClientId;
-
-        if (clientId is not null)
-            await _votingManager.EnqueueVoteAsync(track, clientId);
-    }
-    public async Task<Track?> DequeueVoteAsync() => await _votingManager.DequeueVoteAsync();    // TODO: change return type to Vote
-    public async Task<bool> RemoveVoteAsync(Track track)
-    {
-        string? clientId = (await GetThisClientAsync())?.ClientId;
-
-        if (clientId is null)
-            return false;
-
-        return await _votingManager.RemoveVoteAsync(track, clientId);
-    }
-    public async Task<Vote?> PeekVotingQueue()  // TODO: use TryPeek instead and add Async to method name
-    {
-        try
-        {
-            return (await GetVotingQueueAsync())?.Peek();
-        }
-        catch (InvalidOperationException)
-        {
-            return null;
-        }
-    }
+    public void EnqueueVote(Track votedTrack, string clientId) => Votes.Enqueue(new Vote(votedTrack, clientId));    // TODO: make the parameter a Vote ??
+    public Vote? TryDequeueVote() => Votes.TryDequeue(out Vote? dequeuedVote) ? dequeuedVote : null;
+    public void RemoveVote(Track track, string clientId) => Votes = new (Votes.Where(v => !(v.VotedTrack.SongId == track.SongId && v.ClientId == clientId))); // TODO: make the parameter a Vote ??
+    public Vote? TryPeekVotingQueue() => Votes.TryPeek(out Vote? voteOnTop) ? voteOnTop : null;
     #endregion
 
     #region Timer Methods
@@ -110,14 +85,14 @@ public class SparkflyManager
     private async void OnTimerElapsedAsync(object source, EventArgs args)
     {
         Track newestTrack = await SpotifyGetCurrentlyPlayingAsync();
-        Track? nextTrack = (await PeekVotingQueue())?.VotedTrack;
+        Track? nextTrack = TryPeekVotingQueue()?.VotedTrack;
 
         if (newestTrack.SongId != CurrentlyPlayingTrack.SongId)
         {
             CurrentlyPlayingTrack = newestTrack;
 
             if (newestTrack.SongId == nextTrack?.SongId)
-                nextTrack = await DequeueVoteAsync();
+                nextTrack = TryDequeueVote()?.VotedTrack;
         }
 
         if (nextTrack is not null && (newestTrack.DurationMs - newestTrack.ProgressMs) < (_loopPeriodInSeconds * 1000))

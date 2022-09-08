@@ -19,7 +19,7 @@
             }
             else
             {
-                <TrackCard Track="vote.VotedTrack"/>
+                <TrackCard Track="vote.VotedTrack" />
             }
         }
     }
@@ -30,16 +30,21 @@
     private Queue<Vote>? _votes;
     private string? _thisClientId;
 
+    // TODO: make the page update alongside the Timer
+
     protected override async Task OnInitializedAsync()
     {
         _thisClientId = (await Sparkfly.GetThisClientAsync())?.ClientId;
-        _votes = await Sparkfly.GetVotingQueueAsync();
+        _votes = Sparkfly.Votes;
     }
 
     private async Task RemoveVoteAsync(Track track)
     {
-        await Sparkfly.RemoveVoteAsync(track);
-        _votes = await Sparkfly.GetVotingQueueAsync();
-        await InvokeAsync(StateHasChanged);     // NOTE: may not be necessary... see Blazor EventCallback with parameters
+        if (_thisClientId is not null)
+        {
+            Sparkfly.RemoveVote(track, _thisClientId);
+            _votes = Sparkfly.Votes;
+            await InvokeAsync(StateHasChanged);     // NOTE: may not be necessary... see Blazor EventCallback with parameters
+        }
     }
 }

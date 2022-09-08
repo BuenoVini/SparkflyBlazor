@@ -5,20 +5,19 @@
 @using Sparkfly.Main.Data
 
 @inject SparkflyManager Sparkfly
-@inject NavigationManager NavigationManager
 
 <MudStack Class="d-flex flex-column flex-grow-1 gap-4">
     <form @onsubmit="SearchTracks">
         <MudContainer Class="px-0 mb-8">
-            <MudTextField class="object-top" @bind-Value="UserInput" Label="Search for a track" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Primary" />
+            <MudTextField class="object-top" @bind-Value="_userInput" Label="Search for a track" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Primary" />
         </MudContainer>
     </form>
 
-    @if (SearchedTracks is not null)
+    @if (_searchedTracks is not null)
     {
-        @foreach (Track track in SearchedTracks)
+        @foreach (Track track in _searchedTracks)
         {
-            <TrackCard Track="track" OnClickCallback="EnqueueVoteAsync" BtnFunc="TrackCard.BtnFunctionality.Add"/>
+            <TrackCard Track="track" OnClickCallback="EnqueueVoteAsync" BtnFunc="TrackCard.BtnFunctionality.Add" />
         }
     }
     else
@@ -28,17 +27,27 @@
 </MudStack>
 
 @code {
-    public string? UserInput { get; set; }
-    public List<Track>? SearchedTracks { get; set; }
+    private string? _userInput;
+    private List<Track>? _searchedTracks;
+    private string? _thisClientId;
 
-    private async Task EnqueueVoteAsync(Track track) => await Sparkfly.EnqueueVoteAsync(track);
+    protected override async Task OnInitializedAsync()
+    {
+        _thisClientId = (await Sparkfly.GetThisClientAsync())?.ClientId;
+    }
+
+    private void EnqueueVoteAsync(Track track)
+    {
+        if (_thisClientId is not null)
+            Sparkfly.EnqueueVote(track, _thisClientId);
+    }
 
     private async Task SearchTracks()
     {
         try     // TODO: move the try-catch to SparkflyManager
         {
-            if (UserInput is not null)
-                SearchedTracks = await Sparkfly.SpotifySearchTracksAsync(UserInput);
+            if (_userInput is not null)
+                _searchedTracks = await Sparkfly.SpotifySearchTracksAsync(_userInput);
         }
         catch (HttpRequestException e)
         {

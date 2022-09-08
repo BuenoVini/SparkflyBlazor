@@ -51,7 +51,7 @@
     private async void UpdateUi(object source, EventArgs args)
     {
         _currentTrack = Sparkfly.CurrentlyPlayingTrack;
-        _nextTrack = (await Sparkfly.PeekVotingQueue())?.VotedTrack;
+        _nextTrack = Sparkfly.TryPeekVotingQueue()?.VotedTrack;
 
         await InvokeAsync(StateHasChanged);
     }
