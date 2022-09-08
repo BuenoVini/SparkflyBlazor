@@ -16,12 +16,19 @@ public class SpotifyManager
 
     private static readonly string _CLIENT_ID;
     private static readonly string _CLIENT_SECRET;
-    private static readonly HttpClient _httpClient;
+    private static readonly HttpClient _httpClient; // NOTE: being static means only one header... TODO: make this non-static and call SetBearerAuthHeader() in every request
 
-    private readonly NavigationManager _navigationManager;
-    private readonly ProtectedSessionStorage _currentSession;
+    public struct Tokens
+    {
+        public string AccessToken { get; set; }
+        public string RefreshToken { get; set; }
 
-    private string? _authCode;
+        public Tokens(string accessToken, string refreshToken)
+        {
+            AccessToken = accessToken;
+            RefreshToken = refreshToken;
+        }
+    }
 
     static SpotifyManager()
     {
@@ -39,19 +46,11 @@ public class SpotifyManager
         _httpClient = new();
     }
 
-    public SpotifyManager(NavigationManager navigationManager, ProtectedSessionStorage session)
-    {
-        _navigationManager = navigationManager;
-        _currentSession = session;
-    }
-
     private void SetBasicAuthHeader() => _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", $"{Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_CLIENT_ID}:{_CLIENT_SECRET}"))}");
     private void SetBearerAuthHeader(string accessToken) => _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-    public async Task RequestUserAuthorizationAsync()
+    public Uri RequestUserAuthorizationUri(string state)
     {
-        string state = new Random().Next().ToString();
-
         KeyValuePair<string, string?>[] parameters = new[]
         {
             new KeyValuePair<string, string?>("client_id", _CLIENT_ID),
@@ -61,27 +60,18 @@ public class SpotifyManager
             new KeyValuePair<string, string?>("state", state)
         };
 
-        await _currentSession.SetAsync("state", state);
-
-        _navigationManager.NavigateTo("https://accounts.spotify.com/authorize" + QueryString.Create(parameters).ToString());
+        return new Uri("https://accounts.spotify.com/authorize" + QueryString.Create(parameters).ToString());
     }
 
-    private async Task SetAuthCodeAsync(string authCode, string stateCode)
+    public async Task<Tokens> RequestAccessAndRefreshTokensAsync(string authCode, string originalStateCode, string returnedStateCode)
     {
-        if (stateCode == (await _currentSession.GetAsync<string>("state")).Value)
-            _authCode = authCode;
-        else
+        if (originalStateCode != returnedStateCode)
             throw new RequestApiException("Invalid state code returned by the server.");    // TODO: make this catchable
-    }
-
-    public async Task RequestAccessAndRefreshTokensAsync(string authCode, string stateCode)
-    {
-        await SetAuthCodeAsync(authCode, stateCode);
 
         var content = new FormUrlEncodedContent(new[]
         {
             new KeyValuePair<string, string?>("grant_type", "authorization_code"),
-            new KeyValuePair<string, string?>("code", _authCode),
+            new KeyValuePair<string, string?>("code", authCode),
             new KeyValuePair<string, string?>("redirect_uri", _REDIRECT_URI)
         });
 
@@ -95,26 +85,23 @@ public class SpotifyManager
         string? accessToken = jsonResponse.RootElement.GetProperty("access_token").GetString();
         string? refreshToken = jsonResponse.RootElement.GetProperty("refresh_token").GetString();
 
-        // TODO: find a proper way to store the tokens
-        if (accessToken is not null)
-            await _currentSession.SetAsync("access_token", accessToken);
-        else
+        if (accessToken is null)
             throw new RequestApiException("Returned access token is null.");
 
-        if (refreshToken is not null)
-            await _currentSession.SetAsync("refresh_token", refreshToken);
-        else
+        if (refreshToken is null)
             throw new RequestApiException("Returned refresh token is null.");
 
         SetBearerAuthHeader(accessToken);
+
+        return new Tokens(accessToken, refreshToken);
     }
 
-    public async Task RefreshAccessTokenAsync()
+    public async Task<string> RefreshAccessTokenAsync(string refreshToken)
     {
         var content = new FormUrlEncodedContent(new[]
         {
             new KeyValuePair<string, string?>("grant_type", "refresh_token"),
-            new KeyValuePair<string, string?>("refresh_token", (await _currentSession.GetAsync<string>("refresh_token")).Value)
+            new KeyValuePair<string, string?>("refresh_token", refreshToken)
         });
 
         SetBasicAuthHeader();
@@ -124,18 +111,17 @@ public class SpotifyManager
 
         using JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
 
-        string? accessToken = jsonResponse.RootElement.GetProperty("access_token").GetString();
+        string? newAccessToken = jsonResponse.RootElement.GetProperty("access_token").GetString();
 
-        // TODO: find a proper way to store the tokens
-        if (accessToken is not null)
-            await _currentSession.SetAsync("access_token", accessToken);
-        else
+        if (newAccessToken is null)
             throw new RequestApiException("Returned access token is null.");
 
-        SetBearerAuthHeader(accessToken);
+        SetBearerAuthHeader(newAccessToken);
+
+        return newAccessToken;
     }
 
-    public async Task<Track> GetCurrentlyPlayingAsync()
+    public async Task<Track?> GetCurrentlyPlayingAsync()
     {
         using HttpResponseMessage httpResponse = await _httpClient.GetAsync(_API_ADDRESS + "/me/player/currently-playing");
 
@@ -152,7 +138,7 @@ public class SpotifyManager
             return currentTrack;
         }
         else
-            return new Track().MakeThisDummy(); // TODO: let the Main Manager make the dummy and return null instead
+            return null;
     }
 
     public async Task<List<Track>> SearchTracksAsync(string searchFor)
