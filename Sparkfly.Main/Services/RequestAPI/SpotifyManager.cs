@@ -36,9 +36,9 @@ public class SpotifyManager
         string? clientSecret = Environment.GetEnvironmentVariable("SPOTIFY_CLIENT_SECRET");
 
         if (clientId is null)
-            throw new RequestApiException("Environment Variable 'SPOTIFY_CLIENT_ID' was not found.");
+            throw new SpotifyApiException("Environment Variable 'SPOTIFY_CLIENT_ID' was not found.");
         if (clientSecret is null)
-            throw new RequestApiException("Environment Variable 'SPOTIFY_CLIENT_SECRET' was not found.");
+            throw new SpotifyApiException("Environment Variable 'SPOTIFY_CLIENT_SECRET' was not found.");
 
         _CLIENT_ID = clientId;
         _CLIENT_SECRET = clientSecret;
@@ -66,7 +66,7 @@ public class SpotifyManager
     public async Task<Tokens> RequestAccessAndRefreshTokensAsync(string authCode, string originalStateCode, string returnedStateCode)
     {
         if (originalStateCode != returnedStateCode)
-            throw new RequestApiException("Invalid state code returned by the server.");    // TODO: make this catchable
+            throw new SpotifyApiException("Invalid state code returned by the server.");    // TODO: make this catchable
 
         var content = new FormUrlEncodedContent(new[]
         {
@@ -86,10 +86,10 @@ public class SpotifyManager
         string? refreshToken = jsonResponse.RootElement.GetProperty("refresh_token").GetString();
 
         if (accessToken is null)
-            throw new RequestApiException("Returned access token is null.");
+            throw new SpotifyApiException("Returned access token is null.");
 
         if (refreshToken is null)
-            throw new RequestApiException("Returned refresh token is null.");
+            throw new SpotifyApiException("Returned refresh token is null.");
 
         SetBearerAuthHeader(accessToken);
 
@@ -114,7 +114,7 @@ public class SpotifyManager
         string? newAccessToken = jsonResponse.RootElement.GetProperty("access_token").GetString();
 
         if (newAccessToken is null)
-            throw new RequestApiException("Returned access token is null.");
+            throw new SpotifyApiException("Returned access token is null.");
 
         SetBearerAuthHeader(newAccessToken);
 

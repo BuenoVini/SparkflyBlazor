@@ -12,7 +12,6 @@ public class SparkflyManager
     #region Attributes and Constructor
     private readonly SpotifyManager _spotifyManager;
     private readonly TimerManager _timerManager;
-    private readonly NavigationManager _navigationManager;
 
     private int _loopPeriodInSeconds = 0;
 
@@ -20,9 +19,8 @@ public class SparkflyManager
     public Track CurrentlyPlayingTrack { get; private set; }
     public Queue<Vote> Votes { get; private set; }
 
-    public SparkflyManager(NavigationManager navigationManager, TimerManager timerManager)
+    public SparkflyManager(TimerManager timerManager)
     {
-        _navigationManager = navigationManager;
         _timerManager = timerManager;
 
         _spotifyManager = new SpotifyManager();
@@ -33,28 +31,105 @@ public class SparkflyManager
     #endregion
 
     #region Spotify Methods
-    public Uri SpotifySignInUri(string state) => _spotifyManager.RequestUserAuthorizationUri(state);
+    public Uri SpotifySignInUri(string state)
+    {
+        try
+        {
+            return _spotifyManager.RequestUserAuthorizationUri(state);
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
     public async Task SpotifyRequestTokensAsync(string authCode, string originalStateCode, string returnedStateCode)
     {
         try
         {
             _tokens = await _spotifyManager.RequestAccessAndRefreshTokensAsync(authCode, originalStateCode, returnedStateCode);
         }
-        catch (HttpRequestException e)
+        catch (Exception)
         {
-            await HandleHttpExceptionAsync(e);
+            throw;
         }
     }
-    public async Task SpotifyRefreshAccessTokenAsync() => _tokens.AccessToken = await _spotifyManager.RefreshAccessTokenAsync(_tokens.RefreshToken);
-    private async Task<Track> SpotifyGetCurrentlyPlayingAsync() => await _spotifyManager.GetCurrentlyPlayingAsync() ?? new Track().MakeThisDummy();
-    public async Task<List<Track>> SpotifySearchTracksAsync(string searchFor) => await _spotifyManager.SearchTracksAsync(searchFor);
-    private async Task SpotifyAddToPlaybackQueueAsync(Track track) => await _spotifyManager.AddToPlaybackQueueAsync(track);
+    private async Task SpotifyRefreshAccessTokenAsync()
+    {
+        try
+        {
+            _tokens.AccessToken = await _spotifyManager.RefreshAccessTokenAsync(_tokens.RefreshToken);
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    private async Task<Track> SpotifyGetCurrentlyPlayingAsync()
+    {
+        try
+        {
+            return await _spotifyManager.GetCurrentlyPlayingAsync() ?? new Track().MakeThisDummy();
+        }
+        catch (HttpRequestException ex)
+        {
+            try
+            {
+                await HandleHttpExceptionAsync(ex);
+
+                return await _spotifyManager.GetCurrentlyPlayingAsync() ?? new Track().MakeThisDummy();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+    }
+    public async Task<List<Track>> SpotifySearchTracksAsync(string searchFor)
+    {
+        try
+        {
+            return await _spotifyManager.SearchTracksAsync(searchFor);
+        }
+        catch (HttpRequestException ex)
+        {
+            try
+            {
+                await HandleHttpExceptionAsync(ex);
+
+                return await _spotifyManager.SearchTracksAsync(searchFor);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+    }
+    private async Task SpotifyAddToPlaybackQueueAsync(Track track)
+    {
+        try
+        {
+            await _spotifyManager.AddToPlaybackQueueAsync(track);
+        }
+        catch (HttpRequestException ex)
+        {
+            try
+            {
+                await HandleHttpExceptionAsync(ex);
+
+                await _spotifyManager.AddToPlaybackQueueAsync(track);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+    }
     #endregion
 
     #region Voting Queue Methods
     public void EnqueueVote(Track votedTrack, Client client) => Votes.Enqueue(new Vote(votedTrack, client));
     public Vote? TryDequeueVote() => Votes.TryDequeue(out Vote? dequeuedVote) ? dequeuedVote : null;
-    public void RemoveVote(Track track, Client client) => Votes = new (Votes.Where(v => !(v.VotedTrack.SongId == track.SongId && v.Client.Id == client.Id)));
+    public void RemoveVote(Track track, Client client) => Votes = new(Votes.Where(v => !(v.VotedTrack.SongId == track.SongId && v.Client.Id == client.Id)));
     public Vote? TryPeekVotingQueue() => Votes.TryPeek(out Vote? voteOnTop) ? voteOnTop : null;
     #endregion
 
@@ -101,18 +176,16 @@ public class SparkflyManager
     #endregion
 
     #region Other Methods
-    public async Task HandleHttpExceptionAsync(HttpRequestException exception)
+    private async Task HandleHttpExceptionAsync(HttpRequestException exception)
     {
         try
         {
             if (exception.StatusCode == HttpStatusCode.Unauthorized)
                 await SpotifyRefreshAccessTokenAsync();
-            else
-                _navigationManager.NavigateTo("/unhandled-error" + QueryString.Create("message", exception.Message));
         }
-        catch (HttpRequestException)
+        catch (Exception)
         {
-            _navigationManager.NavigateTo("/unhandled-error" + QueryString.Create("message", exception.Message));
+            throw;
         }
     }
     #endregion

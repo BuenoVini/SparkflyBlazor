@@ -3,8 +3,10 @@
 @using Sparkfly.Main.Components
 @using Sparkfly.Main.Services
 @using Sparkfly.Main.Data
+@using Sparkfly.Main.Services.RequestApi
 
 @inject SparkflyManager Sparkfly
+@inject NavigationManager NavManager
 @inject ProtectedSessionStorage ProtectedSession
 
 <MudStack Class="d-flex flex-column flex-grow-1 gap-4">
@@ -45,14 +47,19 @@
 
     private async Task SearchTracks()
     {
-        try     // TODO: move the try-catch to SparkflyManager
+        if (_userInput is not null)
         {
-            if (_userInput is not null)
+            try
+            {
                 _searchedTracks = await Sparkfly.SpotifySearchTracksAsync(_userInput);
-        }
-        catch (HttpRequestException e)
-        {
-            await Sparkfly.HandleHttpExceptionAsync(e);
+            }
+            catch (Exception ex)
+            {
+                if (ex is SpotifyApiException || ex is HttpRequestException)
+                    NavManager.NavigateTo("/unhandled-error" + QueryString.Create("message", ex.Message));
+                else
+                    throw;
+            }
         }
     }
 }

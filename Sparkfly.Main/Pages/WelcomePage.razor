@@ -1,6 +1,7 @@
 ﻿@page "/welcome"
 
 @using Sparkfly.Main.Services
+@using Sparkfly.Main.Services.RequestApi
 
 @inject SparkflyManager Sparkfly
 @inject NavigationManager NavManager
@@ -25,9 +26,19 @@
     private void SpotifySignIn() 
     {
         string state = new Random().Next().ToString();
-        
         ProtectedSession.SetAsync("state", state);
-        NavManager.NavigateTo(Sparkfly.SpotifySignInUri(state).ToString());
+
+        try
+        {
+            NavManager.NavigateTo(Sparkfly.SpotifySignInUri(state).ToString());
+        }
+        catch (Exception ex)
+        {
+            if (ex is SpotifyApiException || ex is HttpRequestException)
+                NavManager.NavigateTo("/unhandled-error" + QueryString.Create("message", ex.Message));
+            else
+                throw;
+        }
     }
 
     private void GuestSignIn()
