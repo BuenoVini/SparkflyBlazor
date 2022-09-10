@@ -24,22 +24,22 @@
             <MudText Align="Align.Center" Typo="Typo.body1">@_currentTrack.SongName</MudText>
             <MudText Align="Align.Center" Typo="Typo.body2">@_currentTrack.ArtistsNames[0]</MudText>
             <div class="d-flex justify-center mt-2">
-                <MudText Typo="Typo.caption">Suggested by <strong>SOMEONE</strong>!</MudText>
+                <MudText Typo="Typo.caption">Suggested by <strong>Spotify</strong>!</MudText>
             </div>
         </MudPaper>
 
         <MudText Class="mt-4" Align="Align.Center" Typo="Typo.h6">Playing next: </MudText>
 
-        @if (_nextTrack is not null)
+        @if (_nextVote is not null)
         {
-            <TrackCard Track="@_nextTrack" />
+            <TrackCard Track="@_nextVote.VotedTrack" Client="_nextVote.Client" />
         }
     }
 </MudStack>
 
 @code {
     private Track? _currentTrack;
-    private Track? _nextTrack;
+    private Vote? _nextVote;
 
     protected override void OnInitialized()
     {
@@ -51,7 +51,7 @@
     private async void UpdateUi(object source, EventArgs args)
     {
         _currentTrack = Sparkfly.CurrentlyPlayingTrack;
-        _nextTrack = Sparkfly.TryPeekVotingQueue()?.VotedTrack;
+        _nextVote = Sparkfly.TryPeekVotingQueue();
 
         await InvokeAsync(StateHasChanged);
     }
