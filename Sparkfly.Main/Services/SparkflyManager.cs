@@ -52,9 +52,9 @@ public class SparkflyManager
     #endregion
 
     #region Voting Queue Methods
-    public void EnqueueVote(Track votedTrack, string clientId) => Votes.Enqueue(new Vote(votedTrack, clientId));    // TODO: make the parameter a Vote ??
+    public void EnqueueVote(Track votedTrack, Client client) => Votes.Enqueue(new Vote(votedTrack, client));
     public Vote? TryDequeueVote() => Votes.TryDequeue(out Vote? dequeuedVote) ? dequeuedVote : null;
-    public void RemoveVote(Track track, string clientId) => Votes = new (Votes.Where(v => !(v.VotedTrack.SongId == track.SongId && v.ClientId == clientId))); // TODO: make the parameter a Vote ??
+    public void RemoveVote(Track track, Client client) => Votes = new (Votes.Where(v => !(v.VotedTrack.SongId == track.SongId && v.Client.Id == client.Id)));
     public Vote? TryPeekVotingQueue() => Votes.TryPeek(out Vote? voteOnTop) ? voteOnTop : null;
     #endregion
 

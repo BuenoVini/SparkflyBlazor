@@ -3,12 +3,12 @@
 public class Vote
 {
     public Track VotedTrack { get; set; }
-    public string ClientId { get; set; }
-    public bool IsOnSpotifyQueue { get; set; } = false;
+    public Client Client { get; set; }
+    //public bool IsOnSpotifyQueue { get; set; } = false;
 
-    public Vote(Track votedTrack, string clientId)
+    public Vote(Track votedTrack, Client client)
     {
         VotedTrack = votedTrack;
-        ClientId = clientId;
+        Client = client;
     }
 }

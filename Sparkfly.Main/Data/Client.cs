@@ -4,15 +4,12 @@ namespace Sparkfly.Main.Data;
 
 public class Client
 {
-    public string ClientId { get; private set; }
+    public string Id { get; private set; }
+    public string? Name { get; set; }
 
-    //[Required(ErrorMessage = "Please inform your name.")]
-    //[StringLength(15, ErrorMessage = "Name is too long.")]
-    public string? ClientName { get; set; }
-
-    public Client(string clientId, string? clientName)
+    public Client(string id, string? name)
     {
-        ClientId = clientId;
-        ClientName = clientName;
+        Id = id;
+        Name = name;
     }
 }

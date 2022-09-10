@@ -13,7 +13,7 @@
     {
         @foreach (var vote in _votes)
         {
-            @if (vote.ClientId == _thisClientId)
+            @if (vote.Client.Id == _thisClient?.Id)
             {
                 <TrackCard Track="vote.VotedTrack" OnClickCallback="@RemoveVoteAsync" BtnFunc="TrackCard.BtnFunctionality.Remove" />
                 // TODO: verify if the track is queued on Spotify already
@@ -29,21 +29,21 @@
 
 @code {
     private Queue<Vote>? _votes;
-    private string? _thisClientId;
+    private Client? _thisClient;
 
     // TODO: make the page update alongside the Timer
 
     protected override async Task OnInitializedAsync()
     {
-        _thisClientId = (await ProtectedSession.GetAsync<Client>("this_client")).Value?.ClientId;
+        _thisClient = (await ProtectedSession.GetAsync<Client>("this_client")).Value;
         _votes = Sparkfly.Votes;
     }
 
     private async Task RemoveVoteAsync(Track track)
     {
-        if (_thisClientId is not null)
+        if (_thisClient is not null)
         {
-            Sparkfly.RemoveVote(track, _thisClientId);
+            Sparkfly.RemoveVote(track, _thisClient);
             _votes = Sparkfly.Votes;
             await InvokeAsync(StateHasChanged);     // NOTE: may not be necessary... see Blazor EventCallback with parameters
         }

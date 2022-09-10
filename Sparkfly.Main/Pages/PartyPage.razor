@@ -24,7 +24,7 @@
 
         if (thisClient is not null && _clientNameInput is not null)
         {
-            thisClient.ClientName = _clientNameInput;
+            thisClient.Name = _clientNameInput;
             await ProtectedSession.SetAsync("this_client", thisClient);
         }
     }

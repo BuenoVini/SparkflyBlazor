@@ -30,17 +30,17 @@
 @code {
     private string? _userInput;
     private List<Track>? _searchedTracks;
-    private string? _thisClientId;
+    private Client? _thisClient;
 
     protected override async Task OnInitializedAsync()
     {
-        _thisClientId = (await ProtectedSession.GetAsync<Client>("this_client")).Value?.ClientId;
+        _thisClient = (await ProtectedSession.GetAsync<Client>("this_client")).Value;
     }
 
     private void EnqueueVote(Track track)
     {
-        if (_thisClientId is not null)
-            Sparkfly.EnqueueVote(track, _thisClientId);
+        if (_thisClient is not null)
+            Sparkfly.EnqueueVote(track, _thisClient);
     }
 
     private async Task SearchTracks()
