@@ -26,6 +26,8 @@
         {
             thisClient.Name = _clientNameInput;
             await ProtectedSession.SetAsync("this_client", thisClient);
+
+            Sparkfly.UpdateClient(thisClient);
         }
     }
 }

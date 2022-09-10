@@ -13,11 +13,12 @@ public class SparkflyManager
     private readonly SpotifyManager _spotifyManager;
     private readonly TimerManager _timerManager;
 
-    private int _loopPeriodInSeconds = 0;
-
-    private SpotifyManager.Tokens _tokens;
     public Track CurrentlyPlayingTrack { get; private set; }
     public Queue<Vote> Votes { get; private set; }
+    public List<Client> Clients { get; private set; }
+
+    private SpotifyManager.Tokens _tokens;
+    private int _loopPeriodInSeconds = 0;
 
     public SparkflyManager(TimerManager timerManager)
     {
@@ -27,6 +28,7 @@ public class SparkflyManager
 
         CurrentlyPlayingTrack = new Track().MakeThisDummy();
         Votes = new Queue<Vote>();
+        Clients = new List<Client>();
     }
     #endregion
 
@@ -173,6 +175,10 @@ public class SparkflyManager
 
         // TODO: else add a recommended track
     }
+    #endregion
+
+    #region Client Methods
+    public void UpdateClient(Client clientUpdated) => Clients[Clients.FindIndex(c => c.Id == clientUpdated.Id)] = clientUpdated;
     #endregion
 
     #region Other Methods

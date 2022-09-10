@@ -1,6 +1,5 @@
 ﻿@page "/validate"
 @page "/validate/{code}/{state}"
-@*@page "/validate/{party-id}"*@
 
 @using Sparkfly.Main.Services
 @using Sparkfly.Main.Data
@@ -36,6 +35,10 @@
                 try
                 {
                     await Sparkfly.SpotifyRequestTokensAsync(Code, (await ProtectedSession.GetAsync<string>("state")).Value ?? string.Empty, State);
+
+                    await ProtectedSession.DeleteAsync("state");
+
+                    Sparkfly.StartTimer();
                 }
                 catch (Exception ex)
                 {
@@ -46,11 +49,9 @@
                 }
             }
 
-            await ProtectedSession.DeleteAsync("state");
-
-            await ProtectedSession.SetAsync("this_client", new Client(Guid.NewGuid().ToString(), null));
-
-            Sparkfly.StartTimer();
+            Client newClient = new Client(Guid.NewGuid().ToString(), null);
+            Sparkfly.Clients.Add(newClient);
+            await ProtectedSession.SetAsync("this_client", newClient);
 
             NavManager.NavigateTo("/party");
         }

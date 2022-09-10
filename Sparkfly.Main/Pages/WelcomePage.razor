@@ -41,9 +41,5 @@
         }
     }
 
-    private void GuestSignIn()
-    {
-        if (_partyId is not null)
-            NavManager.NavigateTo("/validate" + QueryString.Create("party_code", _partyId).ToString());
-    }
+    private void GuestSignIn() => NavManager.NavigateTo("/validate");
 }
