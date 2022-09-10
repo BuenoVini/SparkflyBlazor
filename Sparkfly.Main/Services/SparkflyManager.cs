@@ -13,7 +13,8 @@ public class SparkflyManager
     private readonly SpotifyManager _spotifyManager;
     private readonly TimerManager _timerManager;
 
-    public Track CurrentlyPlayingTrack { get; private set; }
+    public Vote CurrentlyPlayingVote { get; private set; }
+    public Vote? PreviouslyPlayedVote { get; private set; }
     public Queue<Vote> Votes { get; private set; }
     public List<Client> Clients { get; private set; }
 
@@ -26,7 +27,7 @@ public class SparkflyManager
 
         _spotifyManager = new SpotifyManager();
 
-        CurrentlyPlayingTrack = new Track().MakeThisDummy();
+        CurrentlyPlayingVote = MakeDummyVote();
         Votes = new Queue<Vote>();
         Clients = new List<Client>();
     }
@@ -49,6 +50,10 @@ public class SparkflyManager
         try
         {
             _tokens = await _spotifyManager.RequestAccessAndRefreshTokensAsync(authCode, originalStateCode, returnedStateCode);
+
+            _timerManager.Stop();
+            Votes.Clear();
+            Clients.Clear();
         }
         catch (Exception)
         {
@@ -133,6 +138,7 @@ public class SparkflyManager
     public Vote? TryDequeueVote() => Votes.TryDequeue(out Vote? dequeuedVote) ? dequeuedVote : null;
     public void RemoveVote(Track track, Client client) => Votes = new(Votes.Where(v => !(v.VotedTrack.SongId == track.SongId && v.Client.Id == client.Id)));
     public Vote? TryPeekVotingQueue() => Votes.TryPeek(out Vote? voteOnTop) ? voteOnTop : null;
+    private Vote MakeDummyVote() => new (new Track().MakeThisDummy(), new Client("0", "Spotify"));
     #endregion
 
     #region Timer Methods
@@ -160,25 +166,30 @@ public class SparkflyManager
     private async void OnTimerElapsedAsync(object source, EventArgs args)
     {
         Track newestTrack = await SpotifyGetCurrentlyPlayingAsync();
-        Track? nextTrack = TryPeekVotingQueue()?.VotedTrack;
+        Vote? nextVote = TryPeekVotingQueue();
 
-        if (newestTrack.SongId != CurrentlyPlayingTrack.SongId)
+        if (newestTrack.SongId != CurrentlyPlayingVote.VotedTrack.SongId)
         {
-            CurrentlyPlayingTrack = newestTrack;
+            PreviouslyPlayedVote = CurrentlyPlayingVote;
 
-            if (newestTrack.SongId == nextTrack?.SongId)
-                nextTrack = TryDequeueVote()?.VotedTrack;
+            if (nextVote is not null && newestTrack.SongId == nextVote.VotedTrack.SongId)
+            {
+                TryDequeueVote();
+                CurrentlyPlayingVote = nextVote;
+            }
+            else
+                CurrentlyPlayingVote = new Vote(newestTrack, new Client("0", "Spotify"));
         }
 
-        if (nextTrack is not null && (newestTrack.DurationMs - newestTrack.ProgressMs) < (_loopPeriodInSeconds * 1000))
-            await SpotifyAddToPlaybackQueueAsync(nextTrack);
+        if (nextVote is not null && (newestTrack.DurationMs - newestTrack.ProgressMs) < (_loopPeriodInSeconds * 1000))
+            await SpotifyAddToPlaybackQueueAsync(nextVote.VotedTrack);
 
         // TODO: else add a recommended track
     }
     #endregion
 
     #region Client Methods
-    public void UpdateClient(Client clientUpdated) => Clients[Clients.FindIndex(c => c.Id == clientUpdated.Id)] = clientUpdated;
+    public void UpdateClient(Client clientUpdated) => Clients[Clients.FindIndex(c => c.Id == clientUpdated.Id)] = clientUpdated;    // TODO: change the client in the queue
     #endregion
 
     #region Other Methods

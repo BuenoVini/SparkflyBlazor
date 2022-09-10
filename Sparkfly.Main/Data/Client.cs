@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Sparkfly.Main.Data;
+﻿namespace Sparkfly.Main.Data;
 
 public class Client
 {

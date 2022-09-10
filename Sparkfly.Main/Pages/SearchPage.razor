@@ -18,6 +18,7 @@
 
     @if (_searchedTracks is not null)
     {
+        // TODO: verify if vote is already on queue
         @foreach (Track track in _searchedTracks)
         {
             <TrackCard Track="track" OnClickCallback="EnqueueVote" BtnFunc="TrackCard.BtnFunctionality.Add" />
