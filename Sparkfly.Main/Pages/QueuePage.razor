@@ -4,6 +4,7 @@
 @using Sparkfly.Main.Services
 
 @inject SparkflyManager Sparkfly
+@inject ProtectedSessionStorage ProtectedSession
 
 <MudStack>
     <h3>Queue</h3>
@@ -34,7 +35,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _thisClientId = (await Sparkfly.GetThisClientAsync())?.ClientId;
+        _thisClientId = (await ProtectedSession.GetAsync<Client>("this_client")).Value?.ClientId;
         _votes = Sparkfly.Votes;
     }
 

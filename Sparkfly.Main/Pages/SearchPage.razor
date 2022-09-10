@@ -5,6 +5,7 @@
 @using Sparkfly.Main.Data
 
 @inject SparkflyManager Sparkfly
+@inject ProtectedSessionStorage ProtectedSession
 
 <MudStack Class="d-flex flex-column flex-grow-1 gap-4">
     <form @onsubmit="SearchTracks">
@@ -17,7 +18,7 @@
     {
         @foreach (Track track in _searchedTracks)
         {
-            <TrackCard Track="track" OnClickCallback="EnqueueVoteAsync" BtnFunc="TrackCard.BtnFunctionality.Add" />
+            <TrackCard Track="track" OnClickCallback="EnqueueVote" BtnFunc="TrackCard.BtnFunctionality.Add" />
         }
     }
     else
@@ -33,10 +34,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _thisClientId = (await Sparkfly.GetThisClientAsync())?.ClientId;
+        _thisClientId = (await ProtectedSession.GetAsync<Client>("this_client")).Value?.ClientId;
     }
 
-    private void EnqueueVoteAsync(Track track)
+    private void EnqueueVote(Track track)
     {
         if (_thisClientId is not null)
             Sparkfly.EnqueueVote(track, _thisClientId);

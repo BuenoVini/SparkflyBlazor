@@ -33,10 +33,12 @@
             else if (Code is not null && State is not null)
             {
                 await Sparkfly.SpotifyRequestTokensAsync(Code, (await ProtectedSession.GetAsync<string>("state")).Value ?? string.Empty, State);
+                await ProtectedSession.DeleteAsync("state");
+
                 NavManager.NavigateTo("/party");
             }
 
-            await Sparkfly.SetThisClientAsync(new Client(Guid.NewGuid().ToString(), null));
+            await ProtectedSession.SetAsync("this_client", new Client(Guid.NewGuid().ToString(), null));
 
             Sparkfly.StartTimer();
         }

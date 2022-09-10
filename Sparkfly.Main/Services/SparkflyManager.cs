@@ -13,7 +13,6 @@ public class SparkflyManager
     private readonly SpotifyManager _spotifyManager;
     private readonly TimerManager _timerManager;
     private readonly NavigationManager _navigationManager;
-    private readonly ProtectedSessionStorage _currentSession;
 
     private int _loopPeriodInSeconds = 0;
 
@@ -21,10 +20,9 @@ public class SparkflyManager
     public Track CurrentlyPlayingTrack { get; private set; }
     public Queue<Vote> Votes { get; private set; }
 
-    public SparkflyManager(NavigationManager navigationManager, ProtectedSessionStorage protectedSession, TimerManager timerManager)
+    public SparkflyManager(NavigationManager navigationManager, TimerManager timerManager)
     {
         _navigationManager = navigationManager;
-        _currentSession = protectedSession;
         _timerManager = timerManager;
 
         _spotifyManager = new SpotifyManager();
@@ -99,22 +97,6 @@ public class SparkflyManager
             await SpotifyAddToPlaybackQueueAsync(nextTrack);
 
         // TODO: else add a recommended track
-    }
-    #endregion
-
-    #region Client Methods
-    public async Task<Client?> GetThisClientAsync() => (await _currentSession.GetAsync<Client>("this_client")).Value;
-    public async Task SetThisClientAsync(Client client) => await _currentSession.SetAsync("this_client", client);
-    public async Task<string?> GetThisClientNameAsync() => (await GetThisClientAsync())?.ClientName;    // FIXME: remove
-    public async Task SetThisClientNameAsync(string name)
-    {
-        Client? client = await GetThisClientAsync();
-
-        if (client is not null)
-        {
-            client.ClientName = name;
-            await SetThisClientAsync(client);
-        }
     }
     #endregion
 
