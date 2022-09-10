@@ -4,22 +4,23 @@
 @using Sparkfly.Main.Services
 
 @inject SparkflyManager Sparkfly
+@inject ProtectedSessionStorage ProtectedSession
 
 <MudStack>
     <h3>Queue</h3>
 
-    @if (votes is not null)
+    @if (_votes is not null)
     {
-        @foreach (var vote in votes)
+        @foreach (var vote in _votes)
         {
-            @if (vote.ClientName == Sparkfly.ClientName)
+            @if (vote.Client.Id == _thisClient?.Id)
             {
-                <TrackCard Track="vote.VotedTrack" OnClickCallback="@RemoveVoteAsync" BtnFunc="TrackCard.BtnFunctionality.Remove" />
+                <TrackCard Track="vote.VotedTrack" Client="vote.Client" OnClickCallback="@RemoveVoteAsync" BtnFunc="TrackCard.BtnFunctionality.Remove" />
                 // TODO: verify if the track is queued on Spotify already
             }
             else
             {
-                <TrackCard Track="vote.VotedTrack"/>
+                <TrackCard Track="vote.VotedTrack" Client="vote.Client" />
             }
         }
     }
@@ -27,14 +28,24 @@
 </MudStack>
 
 @code {
-    private Queue<Vote>? votes;
+    private Queue<Vote>? _votes;
+    private Client? _thisClient;
 
-    protected override async Task OnInitializedAsync() => votes = await Sparkfly.GetVotingQueueAsync();
+    // TODO: make the page update alongside the Timer
+
+    protected override async Task OnInitializedAsync()
+    {
+        _thisClient = (await ProtectedSession.GetAsync<Client>("this_client")).Value;
+        _votes = Sparkfly.Votes;
+    }
 
     private async Task RemoveVoteAsync(Track track)
     {
-        await Sparkfly.RemoveVoteAsync(track);
-        votes = await Sparkfly.GetVotingQueueAsync();
-        await InvokeAsync(StateHasChanged);     // NOTE: may not be necessary... see Blazor EventCallback with parameters
+        if (_thisClient is not null)
+        {
+            Sparkfly.RemoveVote(track, _thisClient);
+            _votes = Sparkfly.Votes;
+            await InvokeAsync(StateHasChanged);     // NOTE: may not be necessary... see Blazor EventCallback with parameters
+        }
     }
 }

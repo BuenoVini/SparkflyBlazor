@@ -1,0 +1,33 @@
+﻿@page "/party"
+
+@using Sparkfly.Main.Services
+
+@inject SparkflyManager Sparkfly
+@inject ProtectedSessionStorage ProtectedSession
+
+<MudStack>
+    <h3>Share the Party Code!</h3>
+
+    Your party code with your friends so they can join the party to listen to music together:
+    <MudText Typo="Typo.h3">759351</MudText>
+
+    <MudTextField @bind-Value="_clientNameInput" Label="Your Name" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Outlined.Edit" AdornmentColor="Color.Primary" />
+    <MudButton OnClick="@SetClientNameAsync" Variant="Variant.Filled" Color="Color.Primary">Update Your Name</MudButton>
+</MudStack>
+
+@code {
+    private string? _clientNameInput;
+
+    private async Task SetClientNameAsync()
+    {
+        Client? thisClient = (await ProtectedSession.GetAsync<Client>("this_client")).Value;
+
+        if (thisClient is not null && _clientNameInput is not null)
+        {
+            thisClient.Name = _clientNameInput;
+            await ProtectedSession.SetAsync("this_client", thisClient);
+
+            Sparkfly.UpdateClient(thisClient);
+        }
+    }
+}

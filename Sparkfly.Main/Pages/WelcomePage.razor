@@ -1,23 +1,45 @@
 ﻿@page "/welcome"
 
 @using Sparkfly.Main.Services
+@using Sparkfly.Main.Services.RequestApi
 
 @inject SparkflyManager Sparkfly
+@inject NavigationManager NavManager
+@inject ProtectedSessionStorage ProtectedSession
 
 <PageTitle>Welcome to Sparkfly!</PageTitle>
 
 <MudStack>
     <MudText Class="mb-8" Typo="Typo.h3">Welcome to Sparkfly!</MudText>
-    <MudTextField @bind-Value="partyCode" Label="Party Code" HelperText="Type here your Party Code." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Outlined.Lock" AdornmentColor="Color.Primary"/>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary">Let Me In!</MudButton>
+
+    <MudTextField @bind-Value="_partyId" Label="Party ID" HelperText="Type here the Party ID your host sent you" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Outlined.Lock" AdornmentColor="Color.Primary"/>
+    <MudButton OnClick="@GuestSignIn" Variant="Variant.Filled" Color="Color.Primary">Let Me In!</MudButton>
     
     <MudText Class="mt-16" Typo="Typo.h5" Align="Align.Center">If you are the host...</MudText>
-    <MudButton OnClick="@SpotifySignInAsync" Variant="Variant.Filled" Color="Color.Success">Sign in with Spotify</MudButton>
+    <MudButton OnClick="@SpotifySignIn" Variant="Variant.Filled" Color="Color.Success">Sign in with Spotify</MudButton>
 </MudStack>
 
 
 @code {
-    private string? partyCode;
+    private string? _partyId;
 
-    private async Task SpotifySignInAsync() => await Sparkfly.SpotifySignInAsync();
+    private void SpotifySignIn() 
+    {
+        string state = new Random().Next().ToString();
+        ProtectedSession.SetAsync("state", state);
+
+        try
+        {
+            NavManager.NavigateTo(Sparkfly.SpotifySignInUri(state).ToString());
+        }
+        catch (Exception ex)
+        {
+            if (ex is SpotifyApiException || ex is HttpRequestException)
+                NavManager.NavigateTo("/unhandled-error" + QueryString.Create("message", ex.Message));
+            else
+                throw;
+        }
+    }
+
+    private void GuestSignIn() => NavManager.NavigateTo("/validate");
 }
