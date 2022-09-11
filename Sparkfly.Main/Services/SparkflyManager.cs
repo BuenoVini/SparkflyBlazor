@@ -19,7 +19,7 @@ public class SparkflyManager
     public List<Client> Clients { get; private set; }
 
     private SpotifyManager.Tokens _tokens;
-    private int _loopPeriodInSeconds = 0;
+    private int _loopPeriodInMs = 0;
 
     public SparkflyManager(TimerManager timerManager)
     {
@@ -153,7 +153,7 @@ public class SparkflyManager
 
         _timerManager.Start(seconds);
 
-        _loopPeriodInSeconds = seconds;
+        _loopPeriodInMs = seconds * 1000;
     }
 
     public void StopTimer()
@@ -181,8 +181,11 @@ public class SparkflyManager
                 CurrentlyPlayingVote = new Vote(newestTrack, new Client("0", "Spotify"));
         }
 
-        if (nextVote is not null && (newestTrack.DurationMs - newestTrack.ProgressMs) < (_loopPeriodInSeconds * 1000))
+        if (nextVote is not null && !nextVote.IsOnSpotifyQueue && (newestTrack.DurationMs - newestTrack.ProgressMs) < _loopPeriodInMs)
+        {
             await SpotifyAddToPlaybackQueueAsync(nextVote.VotedTrack);
+            nextVote.IsOnSpotifyQueue = true;
+        }
 
         // TODO: else add a recommended track
     }

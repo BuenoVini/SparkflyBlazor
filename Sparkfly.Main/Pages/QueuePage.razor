@@ -13,10 +13,9 @@
     {
         @foreach (var vote in _votes)
         {
-            @if (vote.Client.Id == _thisClient?.Id)
+            @if (vote.Client.Id == _thisClient?.Id && !vote.IsOnSpotifyQueue)
             {
                 <TrackCard Track="vote.VotedTrack" Client="vote.Client" OnClickCallback="@RemoveVoteAsync" BtnFunc="TrackCard.BtnFunctionality.Remove" />
-                // TODO: verify if the track is queued on Spotify already
             }
             else
             {
