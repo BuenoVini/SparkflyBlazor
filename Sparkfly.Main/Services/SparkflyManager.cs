@@ -14,8 +14,8 @@ public class SparkflyManager
     private readonly TimerManager _timerManager;
 
     public Vote CurrentlyPlayingVote { get; private set; }
-    public Vote? PreviouslyPlayedVote { get; private set; }
-    public Queue<Vote> Votes { get; private set; }
+    public List<Vote> PreviouslyPlayedVotes { get; private set; }
+    public List<Queue<Vote>> Votes { get; private set; }
     public List<Client> Clients { get; private set; }
 
     private SpotifyManager.Tokens _tokens;
@@ -28,7 +28,8 @@ public class SparkflyManager
         _spotifyManager = new SpotifyManager();
 
         CurrentlyPlayingVote = MakeDummyVote();
-        Votes = new Queue<Vote>();
+        PreviouslyPlayedVotes = new List<Vote>();
+        Votes = new List<Queue<Vote>>();
         Clients = new List<Client>();
     }
     #endregion
@@ -134,11 +135,74 @@ public class SparkflyManager
     #endregion
 
     #region Voting Queue Methods
-    public void EnqueueVote(Track votedTrack, Client client) => Votes.Enqueue(new Vote(votedTrack, client));
-    public Vote? TryDequeueVote() => Votes.TryDequeue(out Vote? dequeuedVote) ? dequeuedVote : null;
-    public void RemoveVote(Track track, Client client) => Votes = new(Votes.Where(v => !(v.VotedTrack.SongId == track.SongId && v.Client.Id == client.Id)));
-    public Vote? TryPeekVotingQueue() => Votes.TryPeek(out Vote? voteOnTop) ? voteOnTop : null;
-    private Vote MakeDummyVote() => new (new Track().MakeThisDummy(), new Client("0", "Spotify"));
+    private Vote MakeDummyVote() => new(new Track().MakeThisDummy(), new Client("0", "Spotify"));
+    private void ResetPriorityZero()
+    {
+        Votes.RemoveAt(0);
+        PreviouslyPlayedVotes.Clear();
+    }
+
+    public Vote? TryPeekVotingQueue()
+    {
+        if (!Votes.Any())
+            return null;
+
+        return Votes[0].TryPeek(out Vote? voteOnTop) ? voteOnTop : null;
+    }
+
+    public void EnqueueVote(Track votedTrack, Client client)
+    {
+        int priority = 0;
+        
+        for (int i = Votes.Count - 1; i >= 0; i--)
+        {
+            if (Votes[i].Any(v => v.Client.Id == client.Id))
+            {
+                if (i + 1 >= Votes.Count)
+                    Votes.Add(new Queue<Vote>());
+
+                priority = i + 1;
+
+                break;
+            }
+        }
+
+        if (priority == 0 && PreviouslyPlayedVotes.Any(v => v.Client.Id == client.Id))
+            priority = 1;
+        else if (!Votes.Any())
+            Votes.Add(new Queue<Vote>());
+
+        Votes[priority].Enqueue(new Vote(votedTrack, client));
+    }
+
+    public Vote? TryDequeueVote()
+    {
+        if (!Votes.Any())
+            return null;
+
+        Votes[0].TryDequeue(out Vote? dequeuedVote);
+
+        if (!Votes[0].Any())
+            ResetPriorityZero();
+
+        return dequeuedVote;
+    }
+
+    public void RemoveVote(Track track, Client client)
+    {
+        for (int i = 0; i < Votes.Count; i++)
+        {
+            if (Votes[i].Any(v => v.VotedTrack.SongId == track.SongId && v.Client.Id == client.Id) == false)
+                continue;
+
+            Votes[i] = new Queue<Vote>(Votes[i].Where(v => !(v.VotedTrack.SongId == track.SongId && v.Client.Id == client.Id)));
+
+            if (!Votes[i].Any())
+                ResetPriorityZero();
+
+            break;
+        }
+    }
     #endregion
 
     #region Timer Methods
@@ -170,11 +234,11 @@ public class SparkflyManager
 
         if (newestTrack.SongId != CurrentlyPlayingVote.VotedTrack.SongId)
         {
-            PreviouslyPlayedVote = CurrentlyPlayingVote;
-
             if (nextVote is not null && newestTrack.SongId == nextVote.VotedTrack.SongId)
             {
                 TryDequeueVote();
+
+                PreviouslyPlayedVotes.Add(CurrentlyPlayingVote);
                 CurrentlyPlayingVote = nextVote;
             }
             else

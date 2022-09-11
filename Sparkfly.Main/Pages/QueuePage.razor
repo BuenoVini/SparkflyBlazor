@@ -7,19 +7,24 @@
 @inject ProtectedSessionStorage ProtectedSession
 
 <MudStack>
-    <h3>Queue</h3>
+    <MudText Align="Align.Center" Typo="Typo.h5">Priority Queues</MudText>
 
     @if (_votes is not null)
     {
-        @foreach (var vote in _votes)
+        @foreach (int i in Enumerable.Range(0, _votes.Count))
         {
-            @if (vote.Client.Id == _thisClient?.Id && !vote.IsOnSpotifyQueue)
+            <MudText Align="Align.Center" Typo="Typo.h6">Priority @(i + 1)</MudText>
+
+            @foreach (var vote in _votes[i])
             {
-                <TrackCard Track="vote.VotedTrack" Client="vote.Client" OnClickCallback="@RemoveVoteAsync" BtnFunc="TrackCard.BtnFunctionality.Remove" />
-            }
-            else
-            {
-                <TrackCard Track="vote.VotedTrack" Client="vote.Client" />
+                @if (vote.Client.Id == _thisClient?.Id && !vote.IsOnSpotifyQueue)
+                {
+                    <TrackCard Track="vote.VotedTrack" Client="vote.Client" OnClickCallback="@RemoveVoteAsync" BtnFunc="TrackCard.BtnFunctionality.Remove" />
+                }
+                else
+                {
+                    <TrackCard Track="vote.VotedTrack" Client="vote.Client" />
+                }
             }
         }
     }
@@ -27,7 +32,7 @@
 </MudStack>
 
 @code {
-    private Queue<Vote>? _votes;
+    private List<Queue<Vote>>? _votes;
     private Client? _thisClient;
 
     // TODO: make the page update alongside the Timer
