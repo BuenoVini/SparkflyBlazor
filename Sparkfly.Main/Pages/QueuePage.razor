@@ -9,13 +9,13 @@
 <MudStack>
     <h3>Queue</h3>
 
-    @if (_votes is not null)
+    @if (Sparkfly.Votes is not null)
     {
-        @foreach (var vote in _votes)
+        @foreach (var vote in Sparkfly.Votes)
         {
             @if (vote.Client.Id == _thisClient?.Id && !vote.IsOnSpotifyQueue)
             {
-                <TrackCard Track="vote.VotedTrack" Client="vote.Client" OnClickCallback="@RemoveVoteAsync" BtnFunc="TrackCard.BtnFunctionality.Remove" />
+                <TrackCard Track="vote.VotedTrack" Client="vote.Client" OnClickCallback="@RemoveVote" BtnFunc="TrackCard.BtnFunctionality.Remove" />
             }
             else
             {
@@ -27,24 +27,27 @@
 </MudStack>
 
 @code {
-    private Queue<Vote>? _votes;
     private Client? _thisClient;
-
-    // TODO: make the page update alongside the Timer
 
     protected override async Task OnInitializedAsync()
     {
         _thisClient = (await ProtectedSession.GetAsync<Client>("this_client")).Value;
-        _votes = Sparkfly.Votes;
+
+        Sparkfly.TimerUpdateEvent += UpdateUi;
+        Sparkfly.VotingQueueUpdateEvent += UpdateUi;
     }
 
-    private async Task RemoveVoteAsync(Track track)
+    private async void UpdateUi(object? source, EventArgs args) => await InvokeAsync(StateHasChanged);
+
+    private void RemoveVote(Track track)
     {
         if (_thisClient is not null)
-        {
             Sparkfly.RemoveVote(track, _thisClient);
-            _votes = Sparkfly.Votes;
-            await InvokeAsync(StateHasChanged);     // NOTE: may not be necessary... see Blazor EventCallback with parameters
-        }
+    }
+
+    public void Dispose()
+    {
+        Sparkfly.TimerUpdateEvent -= UpdateUi;
+        Sparkfly.VotingQueueUpdateEvent -= UpdateUi;
     }
 }

@@ -11,6 +11,7 @@ public class SparkflyManager
 {
     #region Attributes and Constructor
     public EventHandler? TimerUpdateEvent;
+    public EventHandler? VotingQueueUpdateEvent;
 
     private readonly SpotifyManager _spotifyManager;
     private readonly TimerManager _timerManager;
@@ -136,11 +137,22 @@ public class SparkflyManager
     #endregion
 
     #region Voting Queue Methods
-    public void EnqueueVote(Track votedTrack, Client client) => Votes.Enqueue(new Vote(votedTrack, client));
+    protected virtual void OnVotingQueueUpdate() => VotingQueueUpdateEvent?.Invoke(this, EventArgs.Empty);
     public Vote? TryDequeueVote() => Votes.TryDequeue(out Vote? dequeuedVote) ? dequeuedVote : null;
-    public void RemoveVote(Track track, Client client) => Votes = new(Votes.Where(v => !(v.VotedTrack.SongId == track.SongId && v.Client.Id == client.Id)));
     public Vote? TryPeekVotingQueue() => Votes.TryPeek(out Vote? voteOnTop) ? voteOnTop : null;
     private Vote MakeDummyVote() => new (new Track().MakeThisDummy(), new Client("0", "Spotify"));
+
+    public void EnqueueVote(Track votedTrack, Client client)
+    {
+        Votes.Enqueue(new Vote(votedTrack, client));
+        OnVotingQueueUpdate();
+    }
+
+    public void RemoveVote(Track track, Client client)
+    {
+        Votes = new(Votes.Where(v => !(v.VotedTrack.SongId == track.SongId && v.Client.Id == client.Id)));
+        OnVotingQueueUpdate();
+    }
     #endregion
 
     #region Timer Methods

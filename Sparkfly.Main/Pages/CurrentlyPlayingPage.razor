@@ -44,6 +44,7 @@
     protected override void OnInitialized()
     {
         Sparkfly.TimerUpdateEvent += UpdateUi;
+        Sparkfly.VotingQueueUpdateEvent += UpdateUi;
 
         UpdateUi(this, EventArgs.Empty);
     }
@@ -56,5 +57,9 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    public void Dispose() => Sparkfly.TimerUpdateEvent -= UpdateUi;
+    public void Dispose()
+    {
+        Sparkfly.TimerUpdateEvent -= UpdateUi;
+        Sparkfly.VotingQueueUpdateEvent -= UpdateUi;
+    }
 }
