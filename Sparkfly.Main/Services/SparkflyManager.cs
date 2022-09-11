@@ -10,6 +10,8 @@ namespace Sparkfly.Main.Services;
 public class SparkflyManager
 {
     #region Attributes and Constructor
+    public EventHandler? TimerUpdateEvent;
+
     private readonly SpotifyManager _spotifyManager;
     private readonly TimerManager _timerManager;
 
@@ -142,14 +144,13 @@ public class SparkflyManager
     #endregion
 
     #region Timer Methods
-    public void SubscribeToTimerEvent(TimeElapsedEventHandler method) => _timerManager.TimeElapsed += method;
-    public void UnsubscribeToTimerEvent(TimeElapsedEventHandler method) => _timerManager.TimeElapsed -= method;
-    public void StartTimer(int seconds = 15)
+    protected virtual void OnTimerUpdate() => TimerUpdateEvent?.Invoke(this, EventArgs.Empty);
+    public void StartTimer(int seconds = 5)
     {
         if (_timerManager.HasStarted)
             StopTimer();
 
-        SubscribeToTimerEvent(OnTimerElapsedAsync);
+        _timerManager.TimeElapsed += OnTimerElapsedAsync;
 
         _timerManager.Start(seconds);
 
@@ -158,7 +159,7 @@ public class SparkflyManager
 
     public void StopTimer()
     {
-        UnsubscribeToTimerEvent(OnTimerElapsedAsync);
+        _timerManager.TimeElapsed -= OnTimerElapsedAsync;
 
         _timerManager.Stop();
     }
@@ -188,6 +189,8 @@ public class SparkflyManager
         }
 
         // TODO: else add a recommended track
+
+        OnTimerUpdate();
     }
     #endregion
 
