@@ -136,10 +136,12 @@ public class SparkflyManager
 
     #region Voting Queue Methods
     private Vote MakeDummyVote() => new(new Track().MakeThisDummy(), new Client("0", "Spotify"));
-    private void ResetPriorityZero()
+    private void ResetPriority(int priority)
     {
-        Votes.RemoveAt(0);
-        PreviouslyPlayedVotes.Clear();
+        Votes.RemoveAt(priority);
+
+        if (priority == 0)
+            PreviouslyPlayedVotes.Clear();
     }
 
     public Vote? TryPeekVotingQueue()
@@ -152,24 +154,20 @@ public class SparkflyManager
 
     public void EnqueueVote(Track votedTrack, Client client)
     {
-        int priority = 0;
-        
-        for (int i = Votes.Count - 1; i >= 0; i--)
+        int priority = 0;   // lower number means higher priority
+
+        for (priority = 0; priority < Votes.Count; priority++)
         {
-            if (Votes[i].Any(v => v.Client.Id == client.Id))
-            {
-                if (i + 1 >= Votes.Count)
-                    Votes.Add(new Queue<Vote>());
+            if (Votes[priority].Any(v => v.Client.Id == client.Id))
+                continue;
 
-                priority = i + 1;
-
-                break;
-            }
+            break;
         }
 
         if (priority == 0 && PreviouslyPlayedVotes.Any(v => v.Client.Id == client.Id))
             priority = 1;
-        else if (!Votes.Any())
+
+        if (priority >= Votes.Count)
             Votes.Add(new Queue<Vote>());
 
         Votes[priority].Enqueue(new Vote(votedTrack, client));
@@ -183,7 +181,7 @@ public class SparkflyManager
         Votes[0].TryDequeue(out Vote? dequeuedVote);
 
         if (!Votes[0].Any())
-            ResetPriorityZero();
+            ResetPriority(0);
 
         return dequeuedVote;
     }
@@ -198,7 +196,7 @@ public class SparkflyManager
             Votes[i] = new Queue<Vote>(Votes[i].Where(v => !(v.VotedTrack.SongId == track.SongId && v.Client.Id == client.Id)));
 
             if (!Votes[i].Any())
-                ResetPriorityZero();
+                ResetPriority(i);
 
             break;
         }
