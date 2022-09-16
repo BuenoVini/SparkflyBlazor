@@ -43,12 +43,13 @@
 
     protected override void OnInitialized()
     {
-        Sparkfly.SubscribeToTimerEvent(UpdateUi);
+        Sparkfly.TimerUpdateEvent += UpdateUi;
+        Sparkfly.VotingQueueUpdateEvent += UpdateUi;
 
         UpdateUi(this, EventArgs.Empty);
     }
 
-    private async void UpdateUi(object source, EventArgs args)
+    private async void UpdateUi(object? source, EventArgs args)
     {
         _currentVote = Sparkfly.CurrentlyPlayingVote;
         _nextVote = Sparkfly.TryPeekVotingQueue();
@@ -56,5 +57,9 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    public void Dispose() => Sparkfly.UnsubscribeToTimerEvent(UpdateUi);
+    public void Dispose()
+    {
+        Sparkfly.TimerUpdateEvent -= UpdateUi;
+        Sparkfly.VotingQueueUpdateEvent -= UpdateUi;
+    }
 }

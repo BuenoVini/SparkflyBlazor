@@ -25,8 +25,4 @@ public class TimerManager
     }
 
     protected virtual void OnTimerElapsed() => TimeElapsed?.Invoke(this, EventArgs.Empty);
-    //{
-    //    if (TimeElapsed is not null)
-    //        TimeElapsed(this, EventArgs.Empty);
-    //}
 }
