@@ -5,7 +5,7 @@
 
 @inject SparkflyManager Sparkfly
 @inject NavigationManager NavManager
-@inject ProtectedSessionStorage ProtectedSession
+@inject ProtectedLocalStorage LocalStorage
 
 <PageTitle>Welcome to Sparkfly!</PageTitle>
 
@@ -26,7 +26,7 @@
     private void SpotifySignIn() 
     {
         string state = new Random().Next().ToString();
-        ProtectedSession.SetAsync("state", state);
+        LocalStorage.SetAsync("state", state);
 
         try
         {

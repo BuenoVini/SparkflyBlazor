@@ -7,7 +7,7 @@
 
 @inject SparkflyManager Sparkfly
 @inject NavigationManager NavManager
-@inject ProtectedSessionStorage ProtectedSession
+@inject ProtectedLocalStorage LocalStorage
 
 <MudStack Class="d-flex flex-column flex-grow-1 gap-4">
     <form @onsubmit="SearchTracks">
@@ -37,7 +37,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _thisClient = (await ProtectedSession.GetAsync<Client>("this_client")).Value;
+        _thisClient = (await LocalStorage.GetAsync<Client>("this_client")).Value;
     }
 
     private void EnqueueVote(Track track)

@@ -4,7 +4,7 @@
 @using Sparkfly.Main.Services
 
 @inject SparkflyManager Sparkfly
-@inject ProtectedSessionStorage ProtectedSession
+@inject ProtectedLocalStorage LocalStorage
 
 <MudStack>
     <MudText Align="Align.Center" Typo="Typo.h5">Priority Queues</MudText>
@@ -35,7 +35,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _thisClient = (await ProtectedSession.GetAsync<Client>("this_client")).Value;
+        _thisClient = (await LocalStorage.GetAsync<Client>("this_client")).Value;
 
         Sparkfly.TimerUpdateEvent += UpdateUi;
         Sparkfly.VotingQueueUpdateEvent += UpdateUi;
