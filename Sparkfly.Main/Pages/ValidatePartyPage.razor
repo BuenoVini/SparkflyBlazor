@@ -39,6 +39,7 @@
                     await ProtectedSession.DeleteAsync("state");
 
                     Sparkfly.StartTimer();
+                    // delete all clients connected because a new host has signed in
                 }
                 catch (Exception ex)
                 {

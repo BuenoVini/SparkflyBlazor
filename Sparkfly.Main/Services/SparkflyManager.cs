@@ -24,11 +24,11 @@ public class SparkflyManager
     private SpotifyManager.Tokens _tokens;
     private int _loopPeriodInMs = 0;
 
-    public SparkflyManager(TimerManager timerManager)
+    public SparkflyManager(TimerManager timerManager, IWebHostEnvironment HostEnvironment)
     {
         _timerManager = timerManager;
 
-        _spotifyManager = new SpotifyManager();
+        _spotifyManager = new SpotifyManager(HostEnvironment.IsProduction() ? "https://sparkflyblazor.azurewebsites.net/validate" : "https://localhost:5001/validate");
 
         CurrentlyPlayingVote = MakeDummyVote();
         PreviouslyPlayedVotes = new List<Vote>();
