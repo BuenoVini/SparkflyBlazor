@@ -7,7 +7,7 @@
 
 @inject SparkflyManager Sparkfly
 @inject NavigationManager NavManager
-@inject ProtectedSessionStorage ProtectedSession
+@inject ProtectedLocalStorage LocalStorage
 
 @code {
     [Parameter]
@@ -34,9 +34,9 @@
             {
                 try
                 {
-                    await Sparkfly.SpotifyRequestTokensAsync(Code, (await ProtectedSession.GetAsync<string>("state")).Value ?? string.Empty, State);
+                    await Sparkfly.SpotifyRequestTokensAsync(Code, (await LocalStorage.GetAsync<string>("state")).Value ?? string.Empty, State);
 
-                    await ProtectedSession.DeleteAsync("state");
+                    await LocalStorage.DeleteAsync("state");
 
                     Sparkfly.StartTimer();
                     // delete all clients connected because a new host has signed in
@@ -52,7 +52,7 @@
 
             Client newClient = new Client(Guid.NewGuid().ToString(), null);
             Sparkfly.Clients.Add(newClient);
-            await ProtectedSession.SetAsync("this_client", newClient);
+            await LocalStorage.SetAsync("this_client", newClient);
 
             NavManager.NavigateTo("/party");
         }

@@ -3,7 +3,7 @@
 @using Sparkfly.Main.Services
 
 @inject SparkflyManager Sparkfly
-@inject ProtectedSessionStorage ProtectedSession
+@inject ProtectedLocalStorage LocalStorage
 
 <MudStack>
     <h3>Share the Party Code!</h3>
@@ -20,12 +20,12 @@
 
     private async Task SetClientNameAsync()
     {
-        Client? thisClient = (await ProtectedSession.GetAsync<Client>("this_client")).Value;
+        Client? thisClient = (await LocalStorage.GetAsync<Client>("this_client")).Value;
 
         if (thisClient is not null && _clientNameInput is not null)
         {
             thisClient.Name = _clientNameInput;
-            await ProtectedSession.SetAsync("this_client", thisClient);
+            await LocalStorage.SetAsync("this_client", thisClient);
 
             Sparkfly.UpdateClient(thisClient);
         }
