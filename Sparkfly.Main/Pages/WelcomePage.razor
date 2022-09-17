@@ -6,48 +6,48 @@
 @inject SparkflyManager Sparkfly
 @inject NavigationManager NavManager
 @inject ProtectedLocalStorage LocalStorage
-@inject IStringLocalizer<WelcomePage> Msg
+@inject IStringLocalizer<WelcomePage> Text
 
-<PageTitle>@Msg["welcome"]</PageTitle>
+<PageTitle>@Text["welcome"]</PageTitle>
 
 <MudStack Spacing="8">
     <MudText Typo="Typo.h3" Align="Align.Center">
-        <bold>@Msg["welcome"]</bold>
+        <bold>@Text["welcome"]</bold>
     </MudText>
 
     <MudText Typo="Typo.h6" Align="Align.Center">
-        @Msg["about_1"]
+        @Text["about_1"]
     </MudText>
 
 
-    <MudDivider Class="p-16" />
+    <MudDivider />
 
 
     <MudText Typo="Typo.body1" Align="Align.Center">
-        @Msg["about_2"]
+        @Text["about_2"]
     </MudText>
     <MudText Typo="Typo.body1" Align="Align.Center">
-        @Msg["about_3"]
+        @Text["about_3"]
     </MudText>
 
-    <MudTextField @bind-Value="_partyId" Label=@Msg["name_label"] HelperText=@Msg["name_helper"] Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Outlined.Edit" AdornmentColor="Color.Primary" />
+    <MudTextField @bind-Value="_partyId" Label=@Text["name_label"] HelperText=@Text["name_helper"] Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Outlined.Edit" AdornmentColor="Color.Primary" />
 
 
     <MudDivider />
 
 
     <MudText Class="mb-n6" Typo="Typo.body1" Align="Align.Center">
-        @Msg["guide_1"]
+        @Text["guide_1"]
     </MudText>
     <MudButton  OnClick="@GuestSignIn" Variant="Variant.Filled" Color="Color.Primary">
-        @Msg["btn_enter"]
+        @Text["btn_enter"]
     </MudButton>
 
     <MudText Class="mt-2 mb-n6" Typo="Typo.body1" Align="Align.Center">
-        @Msg["guide_2"]
+        @Text["guide_2"]
     </MudText>
     <MudButton OnClick="@SpotifySignIn" Variant="Variant.Filled" Color="Color.Success">
-        @Msg["btn_spotify"]
+        @Text["btn_spotify"]
     </MudButton>
 </MudStack>
 
