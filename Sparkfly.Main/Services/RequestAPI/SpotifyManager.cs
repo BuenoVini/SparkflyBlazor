@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using Sparkfly.Main.Data;
+﻿using Sparkfly.Main.Data;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
@@ -11,12 +9,13 @@ namespace Sparkfly.Main.Services.RequestApi;
 public class SpotifyManager
 {
     private const string _API_ADDRESS = "https://api.spotify.com/v1";
-    private const string _REDIRECT_URI = "https://localhost:5001/validate";
     private const string _SCOPES = "user-read-private user-read-currently-playing user-modify-playback-state";  // TODO: use String.Join
 
     private static readonly string _CLIENT_ID;
     private static readonly string _CLIENT_SECRET;
     private static readonly HttpClient _httpClient; // NOTE: being static means only one header... TODO: make this non-static and call SetBearerAuthHeader() in every request
+
+    private readonly string _REDIRECT_URI;
 
     public struct Tokens
     {
@@ -44,6 +43,11 @@ public class SpotifyManager
         _CLIENT_SECRET = clientSecret;
 
         _httpClient = new();
+    }
+
+    public SpotifyManager(string redirectUri)
+    {
+        _REDIRECT_URI = redirectUri;
     }
 
     private void SetBasicAuthHeader() => _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", $"{Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_CLIENT_ID}:{_CLIENT_SECRET}"))}");
