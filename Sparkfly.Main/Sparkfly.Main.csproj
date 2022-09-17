@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="Pages\WelcomePage.pt.resx" />
+    <Content Include="Pages\WelcomePage.resx" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MudBlazor" Version="6.0.9" />
   </ItemGroup>
 
