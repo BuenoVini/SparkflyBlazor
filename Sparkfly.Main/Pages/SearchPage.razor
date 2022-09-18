@@ -44,9 +44,10 @@
     private List<Track>? _searchedTracks;
     private Client? _thisClient;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        _thisClient = (await LocalStorage.GetAsync<Client>("this_client")).Value;
+        if (firstRender)
+            _thisClient = (await LocalStorage.GetAsync<Client>("this_client")).Value;
     }
 
     private void EnqueueVote(Track track)

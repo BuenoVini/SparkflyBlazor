@@ -48,14 +48,22 @@
     private Client? _thisClient;
     private ExecutionContext? _originalContext;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         _originalContext = ExecutionContext.Capture();
 
-        _thisClient = (await LocalStorage.GetAsync<Client>("this_client")).Value;
-
         Sparkfly.TimerUpdateEvent += UpdateUi;
         Sparkfly.VotingQueueUpdateEvent += UpdateUi;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _thisClient = (await LocalStorage.GetAsync<Client>("this_client")).Value;
+
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async void UpdateUi(object? source, EventArgs args)
