@@ -30,7 +30,7 @@
         @Text["about_3"]
     </MudText>
 
-    <MudTextField @bind-Value="_partyId" Label=@Text["name_label"] HelperText=@Text["name_helper"] Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Outlined.Edit" AdornmentColor="Color.Primary" />
+    <MudTextField @bind-Value="_clientNameInput" Label=@Text["name_label"] HelperText=@Text["name_helper"] Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Outlined.Edit" AdornmentColor="Color.Primary" />
 
 
     <MudDivider />
@@ -39,26 +39,41 @@
     <MudText Class="mb-n6" Typo="Typo.body1" Align="Align.Center">
         @Text["guide_1"]
     </MudText>
-    <MudButton  OnClick="@GuestSignIn" Variant="Variant.Filled" Color="Color.Primary">
+    <MudButton OnClick="@GuestSignInAsync" Variant="Variant.Filled" Color="Color.Primary">
         @Text["btn_enter"]
     </MudButton>
+
+    @if (_showErrorDialog)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-n4">
+            @Text["alert"]
+        </MudAlert>
+    }
 
     <MudText Class="mt-2 mb-n6" Typo="Typo.body1" Align="Align.Center">
         @Text["guide_2"]
     </MudText>
-    <MudButton OnClick="@SpotifySignIn" Variant="Variant.Filled" Color="Color.Success">
+    <MudButton OnClick="@SpotifySignInAsync" Variant="Variant.Filled" Color="Color.Success">
         @Text["btn_spotify"]
     </MudButton>
 </MudStack>
 
 
 @code {
-    private string? _partyId;
+    private const int _MAX_CHARS = 26;
 
-    private void SpotifySignIn()
+    private string? _clientNameInput;
+    private bool _showErrorDialog = false;
+
+    private async Task SpotifySignInAsync()
     {
+        if (!ValidateName())
+            return;
+
+        await SaveClientAsync();
+
         string state = new Random().Next().ToString();
-        LocalStorage.SetAsync("state", state);
+        await LocalStorage.SetAsync("state", state);
 
         try
         {
@@ -73,5 +88,38 @@
         }
     }
 
-    private void GuestSignIn() => NavManager.NavigateTo("/validate");
+    private async Task GuestSignInAsync()
+    {
+        if (!ValidateName())
+            return;
+
+        await SaveClientAsync();
+
+        NavManager.NavigateTo("/help");
+    }
+
+    private bool ValidateName()
+    {
+        if (_clientNameInput is null)
+        {
+            _showErrorDialog = true;
+            return false;
+        }
+        else
+        {
+            if (_clientNameInput.Length > _MAX_CHARS)
+                _clientNameInput = _clientNameInput.Substring(0, _MAX_CHARS);
+
+            return true;
+        }
+    }
+
+    private async Task SaveClientAsync()
+    {
+        Client thisClient = new Client(Guid.NewGuid().ToString(), _clientNameInput ??= "ERROR_NO_NAME_FOUND");
+
+        Sparkfly.Clients.Add(thisClient);
+
+        await LocalStorage.SetAsync("this_client", thisClient);
+    }
 }

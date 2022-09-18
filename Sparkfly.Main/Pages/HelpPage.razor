@@ -49,9 +49,6 @@
             @Text["about_info"]
         </div>
     </MudText>
-
-    <MudTextField @bind-Value="_clientNameInput" Label="Your Name" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Outlined.Edit" AdornmentColor="Color.Primary" />
-    <MudButton OnClick="@SetClientNameAsync" Variant="Variant.Filled" Color="Color.Primary">Update Your Name</MudButton>
 </MudStack>
 
 @code {
@@ -63,16 +60,5 @@
     {
         _currentVote = Sparkfly.CurrentlyPlayingVote;
         _thisClient = (await LocalStorage.GetAsync<Client>("this_client")).Value;
-    }
-
-    private async Task SetClientNameAsync()
-    {
-        if (_thisClient is not null && _clientNameInput is not null)
-        {
-            _thisClient.Name = _clientNameInput;
-            await LocalStorage.SetAsync("this_client", _thisClient);
-
-            Sparkfly.UpdateClient(_thisClient);
-        }
     }
 }

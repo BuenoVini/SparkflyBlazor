@@ -126,6 +126,9 @@
   <data name="about_3" xml:space="preserve">
     <value>Brincadeirinha, aqui temos espaço para todos os gostos! De Metallica à Lady Gaga, faça do Sparkfly a sua casa!</value>
   </data>
+  <data name="alert" xml:space="preserve">
+    <value>Por favor, para continuar, escreva o seu nome na caixa acima e tente de novo!</value>
+  </data>
   <data name="btn_enter" xml:space="preserve">
     <value>DEIXE ME ENTRAR!</value>
   </data>
