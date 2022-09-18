@@ -43,16 +43,28 @@
 
 @code {
     private Client? _thisClient;
+    private ExecutionContext? _originalContext;
 
     protected override async Task OnInitializedAsync()
     {
+        _originalContext = ExecutionContext.Capture();
+
         _thisClient = (await LocalStorage.GetAsync<Client>("this_client")).Value;
 
         Sparkfly.TimerUpdateEvent += UpdateUi;
         Sparkfly.VotingQueueUpdateEvent += UpdateUi;
     }
 
-    private async void UpdateUi(object? source, EventArgs args) => await InvokeAsync(StateHasChanged);
+    private async void UpdateUi(object? source, EventArgs args)
+    {
+        /* FIXED: page falling back to default culture - https://github.com/dotnet/aspnetcore/issues/28521 */
+        if (_originalContext is not null)
+        {
+            ExecutionContext.Restore(_originalContext);
+
+            await InvokeAsync(StateHasChanged);
+        }
+    }
 
     private void RemoveVote(Track track)
     {

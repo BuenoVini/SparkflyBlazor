@@ -56,9 +56,12 @@
 @code {
     private Vote? _currentVote;
     private Vote? _nextVote;
+    private ExecutionContext? _originalContext;
 
     protected override void OnInitialized()
     {
+        _originalContext = ExecutionContext.Capture();
+
         Sparkfly.TimerUpdateEvent += UpdateUi;
         Sparkfly.VotingQueueUpdateEvent += UpdateUi;
 
@@ -70,7 +73,13 @@
         _currentVote = Sparkfly.CurrentlyPlayingVote;
         _nextVote = Sparkfly.TryPeekVotingQueue();
 
-        await InvokeAsync(StateHasChanged);
+        /* FIXED: page falling back to default culture - https://github.com/dotnet/aspnetcore/issues/28521 */
+        if (_originalContext is not null)
+        {
+            ExecutionContext.Restore(_originalContext);
+
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     public void Dispose()
