@@ -8,25 +8,34 @@
 @inject SparkflyManager Sparkfly
 @inject NavigationManager NavManager
 @inject ProtectedLocalStorage LocalStorage
+@inject IStringLocalizer<SearchPage> Text
+
+<PageTitle>@Text["page_title"]</PageTitle>
 
 <MudStack Class="d-flex flex-column flex-grow-1 gap-4">
+    <MudText Align="Align.Center" Typo="Typo.h4">
+        @Text["page_header"]
+    </MudText>
+
+    <MudText Align="Align.Center" Typo="Typo.body1">
+        @Text["about_1"]
+    </MudText>
+
     <form @onsubmit="SearchTracks">
-        <MudContainer Class="px-0 mb-8">
-            <MudTextField class="object-top" @bind-Value="_userInput" Label="Search for a track" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Primary" />
+        <MudContainer Class="px-0 my-4">
+            <MudTextField class="object-top" @bind-Value="_userInput" Label=@Text["label_input"] Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Primary" />
         </MudContainer>
     </form>
 
     @if (_searchedTracks is not null)
     {
+        <MudDivider />
+
         // TODO: verify if vote is already on queue
         @foreach (Track track in _searchedTracks)
         {
             <TrackCard Track="track" OnClickCallback="EnqueueVote" BtnFunc="TrackCard.BtnFunctionality.Add" />
         }
-    }
-    else
-    {
-        <TrackCard Track="new Track().MakeThisDummy()" />
     }
 </MudStack>
 
