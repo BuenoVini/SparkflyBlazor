@@ -158,17 +158,13 @@ public class SparkflyManager
 
     public void EnqueueVote(Track votedTrack, Client client)
     {
-        int priority = 0;   // lower number means higher priority
+        int priority;   // lower number means higher priority
 
-        for (priority = 0; priority < Votes.Count; priority++)
-        {
-            if (Votes[priority].Any(v => v.Client.Id == client.Id))
-                continue;
+        for (priority = Votes.Count; priority > 0; priority--)
+            if (Votes[priority - 1].Any(v => v.Client.Id == client.Id))
+                break;
 
-            break;
-        }
-
-        if (priority == 0 && PreviouslyPlayedVotes.Any(v => v.Client.Id == client.Id))
+        if (priority == 0 && Votes.Any() && (CurrentlyPlayingVote.Client.Id == client.Id || PreviouslyPlayedVotes.Any(v => v.Client.Id == client.Id)))
             priority = 1;
 
         if (priority >= Votes.Count)
@@ -208,7 +204,7 @@ public class SparkflyManager
         }
 
         OnVotingQueueUpdate();
-    }    
+    }
     #endregion
 
     #region Timer Methods
@@ -241,9 +237,10 @@ public class SparkflyManager
         {
             if (nextVote is not null && newestTrack.SongId == nextVote.VotedTrack.SongId)
             {
+                PreviouslyPlayedVotes.Add(CurrentlyPlayingVote);
+
                 TryDequeueVote();
 
-                PreviouslyPlayedVotes.Add(CurrentlyPlayingVote);
                 CurrentlyPlayingVote = nextVote;
             }
             else
