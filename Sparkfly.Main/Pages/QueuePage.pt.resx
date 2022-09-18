@@ -123,6 +123,9 @@
   <data name="about_2" xml:space="preserve">
     <value>Porém, se aquele seu amigo tímido ganhar coragem e adicionar uma música pela primeira vez, saiba que o voto dele terá prioridade.</value>
   </data>
+  <data name="header_1" xml:space="preserve">
+    <value>O que são as Filas de Prioridade?</value>
+  </data>
   <data name="page_title" xml:space="preserve">
     <value>Filas de Prioridade</value>
   </data>

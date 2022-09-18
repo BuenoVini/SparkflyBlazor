@@ -13,13 +13,6 @@
     <MudText Align="Align.Center" Typo="Typo.h4">
         @Text["page_title"]
     </MudText>
-    <MudText Align="Align.Center" Typo="Typo.body1">
-        @Text["about_1"]
-    </MudText>
-    <MudText Align="Align.Center" Typo="Typo.body1">
-        @Text["about_2"]
-    </MudText>
-
 
     @if (Sparkfly.Votes is not null)
     {
@@ -41,6 +34,20 @@
                 }
             }
         }
+
+
+        <MudDivider />
+
+
+        <MudText Align="Align.Center" Typo="Typo.h5">
+            @Text["header_1"]
+        </MudText>
+        <MudText Align="Align.Center" Typo="Typo.body1">
+            @Text["about_1"]
+        </MudText>
+        <MudText Align="Align.Center" Typo="Typo.body1">
+            @Text["about_2"]
+        </MudText>
     }
 </MudStack>
 
