@@ -14,15 +14,15 @@
         @Text["page_title"]
     </MudText>
 
-    @if (Sparkfly.Votes is not null)
+    @if (Sparkfly.VotingQueues is not null)
     {
-        @foreach (int i in Enumerable.Range(0, Sparkfly.Votes.Count))
+        @foreach (int i in Enumerable.Range(0, Sparkfly.VotingQueues.Count))
         {
             <MudDivider />
 
             <MudText Align="Align.Center" Typo="Typo.h6">@Text["priority"] @(i + 1)</MudText>
 
-            @foreach (var vote in Sparkfly.Votes[i])
+            @foreach (var vote in Sparkfly.VotingQueues[i])
             {
                 @if (vote.Client.Id == _thisClient?.Id && !vote.IsOnSpotifyQueue)
                 {

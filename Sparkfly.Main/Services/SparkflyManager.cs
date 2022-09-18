@@ -18,7 +18,7 @@ public class SparkflyManager
 
     public Vote CurrentlyPlayingVote { get; private set; }
     public List<Vote> PreviouslyPlayedVotes { get; private set; }
-    public List<Queue<Vote>> Votes { get; private set; }
+    public List<Queue<Vote>> VotingQueues { get; private set; }
     public List<Client> Clients { get; private set; }
 
     private SpotifyManager.Tokens _tokens;
@@ -32,7 +32,7 @@ public class SparkflyManager
 
         CurrentlyPlayingVote = MakeDummyVote();
         PreviouslyPlayedVotes = new List<Vote>();
-        Votes = new List<Queue<Vote>>();
+        VotingQueues = new List<Queue<Vote>>();
         Clients = new List<Client>();
     }
     #endregion
@@ -56,7 +56,7 @@ public class SparkflyManager
             _tokens = await _spotifyManager.RequestAccessAndRefreshTokensAsync(authCode, originalStateCode, returnedStateCode);
 
             _timerManager.Stop();
-            Votes.Clear();
+            VotingQueues.Clear();
             Clients.Clear();
         }
         catch (Exception)
@@ -142,7 +142,7 @@ public class SparkflyManager
     private Vote MakeDummyVote() => new(new Track().MakeThisDummy(), new Client("0", "Spotify"));
     private void ResetPriority(int priority)
     {
-        Votes.RemoveAt(priority);
+        VotingQueues.RemoveAt(priority);
 
         if (priority == 0)
             PreviouslyPlayedVotes.Clear();
@@ -150,39 +150,39 @@ public class SparkflyManager
 
     public Vote? TryPeekVotingQueue()
     {
-        if (!Votes.Any())
+        if (VotingQueues.Any() == false)
             return null;
 
-        return Votes[0].TryPeek(out Vote? voteOnTop) ? voteOnTop : null;
+        return VotingQueues[0].TryPeek(out Vote? voteOnTop) ? voteOnTop : null;
     }
 
     public void EnqueueVote(Track votedTrack, Client client)
     {
         int priority;   // lower number means higher priority
 
-        for (priority = Votes.Count; priority > 0; priority--)
-            if (Votes[priority - 1].Any(v => v.Client.Id == client.Id))
+        for (priority = VotingQueues.Count; priority > 0; priority--)
+            if (VotingQueues[priority - 1].Any(v => v.Client.Id == client.Id))
                 break;
 
-        if (priority == 0 && Votes.Any() && (CurrentlyPlayingVote.Client.Id == client.Id || PreviouslyPlayedVotes.Any(v => v.Client.Id == client.Id)))
+        if (priority == 0 && VotingQueues.Any() && (CurrentlyPlayingVote.Client.Id == client.Id || PreviouslyPlayedVotes.Any(v => v.Client.Id == client.Id)))
             priority = 1;
 
-        if (priority >= Votes.Count)
-            Votes.Add(new Queue<Vote>());
+        if (priority >= VotingQueues.Count)
+            VotingQueues.Add(new Queue<Vote>());
 
-        Votes[priority].Enqueue(new Vote(votedTrack, client));
+        VotingQueues[priority].Enqueue(new Vote(votedTrack, client));
 
         OnVotingQueueUpdate();
     }
 
     private Vote? TryDequeueVote()
     {
-        if (Votes.Any() == false)
+        if (VotingQueues.Any() == false)
             return null;
 
-        Votes[0].TryDequeue(out Vote? dequeuedVote);
+        VotingQueues[0].TryDequeue(out Vote? dequeuedVote);
 
-        if (Votes[0].Any() == false)
+        if (VotingQueues[0].Any() == false)
             ResetPriority(0);
 
         return dequeuedVote;
@@ -190,14 +190,14 @@ public class SparkflyManager
 
     public void RemoveVote(Track track, Client client)
     {
-        for (int i = 0; i < Votes.Count; i++)
+        for (int i = 0; i < VotingQueues.Count; i++)
         {
-            if (Votes[i].Any(v => v.VotedTrack.SongId == track.SongId && v.Client.Id == client.Id) == false)
+            if (VotingQueues[i].Any(v => v.VotedTrack.SongId == track.SongId && v.Client.Id == client.Id) == false)
                 continue;
 
-            Votes[i] = new Queue<Vote>(Votes[i].Where(v => !(v.VotedTrack.SongId == track.SongId && v.Client.Id == client.Id)));
+            VotingQueues[i] = new Queue<Vote>(VotingQueues[i].Where(v => !(v.VotedTrack.SongId == track.SongId && v.Client.Id == client.Id)));
 
-            if (Votes[i].Any() == false)
+            if (VotingQueues[i].Any() == false)
                 ResetPriority(i);
 
             break;
