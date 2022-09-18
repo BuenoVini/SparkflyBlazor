@@ -5,15 +5,26 @@
 
 @inject SparkflyManager Sparkfly
 @inject ProtectedLocalStorage LocalStorage
+@inject IStringLocalizer<QueuePage> Text
+
+<PageTitle>@Text["page_title"]</PageTitle>
 
 <MudStack>
-    <MudText Align="Align.Center" Typo="Typo.h5">Priority Queues</MudText>
+    <MudText Align="Align.Center" Typo="Typo.h4">
+        @Text["page_title"]
+    </MudText>
+    <MudText Align="Align.Center" Typo="Typo.body1">
+        @Text["about_1"]
+    </MudText>
+
 
     @if (Sparkfly.Votes is not null)
     {
         @foreach (int i in Enumerable.Range(0, Sparkfly.Votes.Count))
         {
-            <MudText Align="Align.Center" Typo="Typo.h6">Priority @(i + 1)</MudText>
+            <MudDivider />
+
+            <MudText Align="Align.Center" Typo="Typo.h6">@Text["priority"] @(i + 1)</MudText>
 
             @foreach (var vote in Sparkfly.Votes[i])
             {
