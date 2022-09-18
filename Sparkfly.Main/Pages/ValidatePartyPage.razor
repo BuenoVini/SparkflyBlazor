@@ -18,19 +18,11 @@
     [SupplyParameterFromQuery(Name = "state")]
     public string? State { get; set; }
 
-    //[Parameter]
-    //[SupplyParameterFromQuery(Name = "party-id")]
-    public string? PartyId { get; set; }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            if (PartyId is not null)
-            {
-                // TODO: connect to group
-            }
-            else if (Code is not null && State is not null)
+            if (Code is not null && State is not null)
             {
                 try
                 {
@@ -40,6 +32,8 @@
 
                     Sparkfly.StartTimer();
                     // delete all clients connected because a new host has signed in
+
+                    NavManager.NavigateTo("/help");
                 }
                 catch (Exception ex)
                 {
@@ -49,12 +43,8 @@
                         throw;
                 }
             }
-
-            Client newClient = new Client(Guid.NewGuid().ToString(), null);
-            Sparkfly.Clients.Add(newClient);
-            await LocalStorage.SetAsync("this_client", newClient);
-
-            NavManager.NavigateTo("/help");
+            else
+                NavManager.NavigateTo("/unhandled-error" + QueryString.Create("message", "Invalid returned response from Spotify Authentication."));
         }
     }
 }

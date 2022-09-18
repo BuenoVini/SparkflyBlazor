@@ -39,7 +39,7 @@
     <MudText Class="mb-n6" Typo="Typo.body1" Align="Align.Center">
         @Text["guide_1"]
     </MudText>
-    <MudButton OnClick="@GuestSignIn" Variant="Variant.Filled" Color="Color.Primary">
+    <MudButton OnClick="@GuestSignInAsync" Variant="Variant.Filled" Color="Color.Primary">
         @Text["btn_enter"]
     </MudButton>
 
@@ -53,7 +53,7 @@
     <MudText Class="mt-2 mb-n6" Typo="Typo.body1" Align="Align.Center">
         @Text["guide_2"]
     </MudText>
-    <MudButton OnClick="@SpotifySignIn" Variant="Variant.Filled" Color="Color.Success">
+    <MudButton OnClick="@SpotifySignInAsync" Variant="Variant.Filled" Color="Color.Success">
         @Text["btn_spotify"]
     </MudButton>
 </MudStack>
@@ -65,13 +65,15 @@
     private string? _clientNameInput;
     private bool _showErrorDialog = false;
 
-    private void SpotifySignIn()
+    private async Task SpotifySignInAsync()
     {
         if (!ValidateName())
             return;
 
+        await SaveClientAsync();
+
         string state = new Random().Next().ToString();
-        LocalStorage.SetAsync("state", state);
+        await LocalStorage.SetAsync("state", state);
 
         try
         {
@@ -86,12 +88,14 @@
         }
     }
 
-    private void GuestSignIn()
+    private async Task GuestSignInAsync()
     {
         if (!ValidateName())
             return;
 
-        NavManager.NavigateTo("/validate");
+        await SaveClientAsync();
+
+        NavManager.NavigateTo("/help");
     }
 
     private bool ValidateName()
@@ -108,5 +112,14 @@
 
             return true;
         }
+    }
+
+    private async Task SaveClientAsync()
+    {
+        Client thisClient = new Client(Guid.NewGuid().ToString(), _clientNameInput ??= "ERROR_NO_NAME_FOUND");
+
+        Sparkfly.Clients.Add(thisClient);
+
+        await LocalStorage.SetAsync("this_client", thisClient);
     }
 }
