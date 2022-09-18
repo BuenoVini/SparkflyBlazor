@@ -118,7 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="about_1" xml:space="preserve">
-    <value>Acompanhe aqui em tempo real o que você e seus amigos votaram!</value>
+    <value>A fila de prioridade é a forma como o Sparkfly gerencia os seus votos. Você pode mandar quantas músicas o seu coração quiser!</value>
+  </data>
+  <data name="about_2" xml:space="preserve">
+    <value>Porém, se aquele seu amigo tímido ganhar coragem e adicionar uma música pela primeira vez, saiba que o voto dele terá prioridade.</value>
   </data>
   <data name="page_title" xml:space="preserve">
     <value>Filas de Prioridade</value>
