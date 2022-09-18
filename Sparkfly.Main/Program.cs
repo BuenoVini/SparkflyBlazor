@@ -9,6 +9,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<SparkflyManager>();
 builder.Services.AddSingleton<TimerManager>();
 builder.Services.AddMudServices();
+builder.Services.AddLocalization();
 
 var app = builder.Build();
 
@@ -25,6 +26,14 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+var supportedCultures = new[] { "en-US", "pt-BR" };
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture(supportedCultures[0])
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+
+app.UseRequestLocalization(localizationOptions);
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");

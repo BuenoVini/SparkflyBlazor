@@ -2,6 +2,7 @@
 @using Sparkfly.Main.Services
 
 @inject SparkflyManager Sparkfly
+@inject IStringLocalizer<TrackCard> Text
 
 <MudPaper Class="pa-4">
     <MudStack Row="true">
@@ -13,7 +14,7 @@
             <MudText Typo="Typo.body2">@Track.ArtistsNames[0]</MudText>
             @if (Client is not null)
             {
-                <MudText Typo="Typo.caption">Suggested by @Client.Name</MudText>
+                <MudText Typo="Typo.caption">@Text["suggested_by"] @Client.Name</MudText>
             }
         </MudStack>
 
