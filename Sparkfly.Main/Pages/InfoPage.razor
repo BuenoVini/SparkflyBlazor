@@ -95,9 +95,7 @@
 @code {
     private string RandomHelloGif()
     {
-        Random random = new();
-
-        if (random.Next(1, 3) % 2 == 0)
+        if (new Random().Next(1, 3) % 2 == 0)
             return "https://media.giphy.com/media/3ornk57KwDXf81rjWM/giphy.gif";
         else
             return "https://media.giphy.com/media/Nx0rz3jtxtEre/giphy.gif";
