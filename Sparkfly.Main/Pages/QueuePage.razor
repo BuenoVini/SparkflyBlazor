@@ -13,13 +13,6 @@
     <MudText Align="Align.Center" Typo="Typo.h4">
         @Text["page_title"]
     </MudText>
-    <MudText Align="Align.Center" Typo="Typo.body1">
-        @Text["about_1"]
-    </MudText>
-    <MudText Align="Align.Center" Typo="Typo.body1">
-        @Text["about_2"]
-    </MudText>
-
 
     @if (Sparkfly.Votes is not null)
     {
@@ -41,6 +34,20 @@
                 }
             }
         }
+
+
+        <MudDivider />
+
+
+        <MudText Align="Align.Center" Typo="Typo.h5" Class="mt-4">
+            @Text["header_1"]
+        </MudText>
+        <MudText Align="Align.Center" Typo="Typo.body1">
+            @Text["about_1"]
+        </MudText>
+        <MudText Align="Align.Center" Typo="Typo.body1">
+            @Text["about_2"]
+        </MudText>
     }
 </MudStack>
 
@@ -48,14 +55,22 @@
     private Client? _thisClient;
     private ExecutionContext? _originalContext;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         _originalContext = ExecutionContext.Capture();
 
-        _thisClient = (await LocalStorage.GetAsync<Client>("this_client")).Value;
-
         Sparkfly.TimerUpdateEvent += UpdateUi;
         Sparkfly.VotingQueueUpdateEvent += UpdateUi;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _thisClient = (await LocalStorage.GetAsync<Client>("this_client")).Value;
+
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async void UpdateUi(object? source, EventArgs args)

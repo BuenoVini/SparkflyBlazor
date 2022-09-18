@@ -121,7 +121,10 @@
     <value>The priority queue is how Sparkfly manages your votes. You can send as many songs as your heart desires!</value>
   </data>
   <data name="about_2" xml:space="preserve">
-    <value>However, if that shy friend gets the courage and adds a song for the first time, know that their vote will have priority.</value>
+    <value>However, if that shy friend of yours gets the courage and adds a song for the first time, know that their vote will have priority.</value>
+  </data>
+  <data name="header_1" xml:space="preserve">
+    <value>What are the Priority Queues?</value>
   </data>
   <data name="page_title" xml:space="preserve">
     <value>Priority Queues</value>

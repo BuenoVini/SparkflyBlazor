@@ -56,9 +56,14 @@
     private Vote? _currentVote;
     private Client? _thisClient;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized() => _currentVote = Sparkfly.CurrentlyPlayingVote;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        _currentVote = Sparkfly.CurrentlyPlayingVote;
-        _thisClient = (await LocalStorage.GetAsync<Client>("this_client")).Value;
+        if (firstRender)
+        {
+            _thisClient = (await LocalStorage.GetAsync<Client>("this_client")).Value;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 }
