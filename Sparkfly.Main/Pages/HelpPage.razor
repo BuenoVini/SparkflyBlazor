@@ -1,10 +1,10 @@
-﻿@page "/party"
+﻿@page "/help"
 
 @using Sparkfly.Main.Services
 
 @inject SparkflyManager Sparkfly
 @inject ProtectedLocalStorage LocalStorage
-@inject IStringLocalizer<PartyPage> Text
+@inject IStringLocalizer<HelpPage> Text
 
 <PageTitle>@Text["listening_to"] @_currentVote?.VotedTrack.ArtistsNames[0]</PageTitle>
 
