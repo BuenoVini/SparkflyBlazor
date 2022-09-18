@@ -250,7 +250,7 @@ public class SparkflyManager
                 CurrentlyPlayingVote = new Vote(newestTrack, new Client("0", "Spotify"));
         }
 
-        if (nextVote is not null && !nextVote.IsOnSpotifyQueue && (newestTrack.DurationMs - newestTrack.ProgressMs) < _loopPeriodInMs)
+        if (nextVote is not null && !nextVote.IsOnSpotifyQueue && (newestTrack.DurationMs - newestTrack.ProgressMs) < _loopPeriodInMs * 2)
         {
             await SpotifyAddToPlaybackQueueAsync(nextVote.VotedTrack);
             nextVote.IsOnSpotifyQueue = true;
