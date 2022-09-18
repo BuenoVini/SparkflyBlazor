@@ -15,7 +15,7 @@
 <MudStack>
     @if (_currentVote is not null && _currentVote.VotedTrack.SongId != "0")
     {
-        <MudText Align="Align.Center" Typo="Typo.h6">@Text["playing_now"]</MudText>
+        <MudText Align="Align.Center" Typo="Typo.h4">@Text["playing_now"]</MudText>
 
         <MudPaper Class="pa-4" MaxWidth="350px">
             <MudImage Class="rounded-lg align-self-center" Fluid="true" Src=@_currentVote.VotedTrack.CoverSizesUrl[(int)CoverSize.Medium] Alt="Album current playing" Elevation="25" />
