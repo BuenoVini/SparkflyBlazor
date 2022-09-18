@@ -179,14 +179,14 @@ public class SparkflyManager
         OnVotingQueueUpdate();
     }
 
-    public Vote? TryDequeueVote()
+    private Vote? TryDequeueVote()
     {
-        if (!Votes.Any())
+        if (Votes.Any() == false)
             return null;
 
         Votes[0].TryDequeue(out Vote? dequeuedVote);
 
-        if (!Votes[0].Any())
+        if (Votes[0].Any() == false)
             ResetPriority(0);
 
         return dequeuedVote;
@@ -201,7 +201,7 @@ public class SparkflyManager
 
             Votes[i] = new Queue<Vote>(Votes[i].Where(v => !(v.VotedTrack.SongId == track.SongId && v.Client.Id == client.Id)));
 
-            if (!Votes[i].Any())
+            if (Votes[i].Any() == false)
                 ResetPriority(i);
 
             break;
