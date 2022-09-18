@@ -135,6 +135,9 @@
   <data name="about_search" xml:space="preserve">
     <value>The main star, here you can search for tracks to add to the Sparkfly queue. Don't be shy and introduce others to what might be their next favorite song!</value>
   </data>
+  <data name="listening_to" xml:space="preserve">
+    <value>Listening to</value>
+  </data>
   <data name="welcome" xml:space="preserve">
     <value>It's time to have fun</value>
   </data>

@@ -135,6 +135,9 @@
   <data name="about_search" xml:space="preserve">
     <value>A estrela principal, aqui você pode procurar faixas para adicionar à fila do Sparkfly. Não seja tímido e apresente aos outros aquela que pode ser a próxima música favorita deles!</value>
   </data>
+  <data name="listening_to" xml:space="preserve">
+    <value>Ouvindo</value>
+  </data>
   <data name="welcome" xml:space="preserve">
     <value>É hora de se divertir</value>
   </data>
