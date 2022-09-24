@@ -130,7 +130,7 @@
     <value>Por favor, para continuar, escreva o seu nome na caixa acima e tente de novo!</value>
   </data>
   <data name="btn_enter" xml:space="preserve">
-    <value>DEIXE ME ENTRAR!</value>
+    <value>ENTRAR COMO CONVIDADO</value>
   </data>
   <data name="btn_spotify" xml:space="preserve">
     <value>ENTRAR COM SPOTIFY</value>

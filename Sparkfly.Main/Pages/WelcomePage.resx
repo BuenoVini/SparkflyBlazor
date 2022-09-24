@@ -130,10 +130,10 @@
     <value>Please, to continue, write your name in the box above and try again!</value>
   </data>
   <data name="btn_enter" xml:space="preserve">
-    <value>LET ME IN!</value>
+    <value>LOG IN AS GUEST</value>
   </data>
   <data name="btn_spotify" xml:space="preserve">
-    <value>SIGN IN WITH SPOTIFY</value>
+    <value>LOG IN WITH SPOTIFY</value>
   </data>
   <data name="guide_1" xml:space="preserve">
     <value>If you are a guest, you're ready to start listening to your and your friends' favorite songs, just press this button to start 👇</value>
