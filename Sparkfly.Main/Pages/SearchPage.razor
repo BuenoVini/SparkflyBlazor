@@ -21,9 +21,9 @@
         @Text["about_1"]
     </MudText>
 
-    <form @onsubmit="SearchTracks">
+    <form @onsubmit="SearchTracksAsync">
         <MudContainer Class="px-0 my-4">
-            <MudTextField class="object-top" @bind-Value="_userInput" Label=@Text["label_input"] Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Primary" />
+            <MudTextField class="object-top" @bind-Value="_userInput" Label=@Text["label_input"] Variant="Variant.Outlined" OnAdornmentClick="@(async () => await SearchTracksAsync())" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Primary" />
         </MudContainer>
     </form>
 
@@ -56,7 +56,7 @@
             Sparkfly.EnqueueVote(track, _thisClient);
     }
 
-    private async Task SearchTracks()
+    private async Task SearchTracksAsync()
     {
         if (_userInput is not null)
         {
