@@ -7,7 +7,7 @@
 <MudSnackbarProvider />
 
 <MudLayout>
-    <AppBar />
+    <AppBar ShowMenuButton="true" OnClickCallback="DrawerToggle"/>
 
     <MudDrawer @bind-Open="_isDrawerOpen" Elevation="1" Variant="@DrawerVariant.Mini" ClipMode="DrawerClipMode.Always">
         <NavMenu />

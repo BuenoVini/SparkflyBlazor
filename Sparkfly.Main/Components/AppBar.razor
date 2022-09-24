@@ -1,6 +1,17 @@
 ﻿<MudAppBar Elevation="0" Color="Color.Primary">
+    @if (ShowMenuButton)
+    {
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => OnButtonClick())" />
+    }
     <MudSpacer />
     <h1>SPARKFLY</h1>
     <MudSpacer />
     <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/BuenoVini/SparkflyBlazor" Target="_blank" />
 </MudAppBar>
+
+@code {
+    [Parameter] public EventCallback OnClickCallback { get; set; }
+    [Parameter] public bool ShowMenuButton { get; set; } = false;
+
+    private async Task OnButtonClick() => await OnClickCallback.InvokeAsync();
+}
