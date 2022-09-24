@@ -1,0 +1,9 @@
+﻿<MudMainContent>
+    <MudContainer MaxWidth="MaxWidth.Small" Class="my-4 py-4 d-flex justify-center">
+        @Body
+    </MudContainer>
+</MudMainContent>
+
+@code {
+    [Parameter, EditorRequired] public RenderFragment? Body { get; set; }
+}

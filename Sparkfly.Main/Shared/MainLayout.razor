@@ -1,27 +1,22 @@
 ﻿@inherits LayoutComponentBase
 
-<MudThemeProvider @bind-IsDarkMode="@_isDarkMode"/>
+@using Sparkfly.Main.Components
+
+<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar Elevation="0" Color="Color.Primary">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        <MudSpacer />
-        <h1>SPARKFLY</h1>
-        <MudSpacer />
-        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/BuenoVini/Sparkfly" Target="_blank" />
-    </MudAppBar>
+    <AppBar />
 
     <MudDrawer @bind-Open="_isDrawerOpen" Elevation="1" Variant="@DrawerVariant.Mini" ClipMode="DrawerClipMode.Always">
         <NavMenu />
     </MudDrawer>
 
-    <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.Small" Class="my-4 py-4 d-flex justify-center">
-            @Body
-        </MudContainer>
-    </MudMainContent>
+    @if (Body is not null)
+    {
+        <MainContent Body="@Body" />
+    }
 </MudLayout>
 
 @code {
