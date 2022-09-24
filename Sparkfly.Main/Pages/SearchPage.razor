@@ -27,14 +27,20 @@
         </MudContainer>
     </form>
 
-    @if (_searchedTracks is not null)
+    @if (_searchedTracks is not null && _thisClient is not null)
     {
         <MudDivider />
 
-        // TODO: verify if vote is already on queue
         @foreach (Track track in _searchedTracks)
         {
-            <TrackCard Track="track" OnClickCallback="EnqueueVote" BtnFunc="TrackCard.BtnFunctionality.Add" />
+            @if (Sparkfly.IsTrackVoted(track))
+            {
+                <TrackCard Track="track" OnClickCallback="EnqueueVote" />
+            }
+            else
+            {
+                <TrackCard Track="track" OnClickCallback="EnqueueVote" BtnFunc="TrackCard.BtnFunctionality.Add" />
+            }
         }
     }
 </MudStack>
@@ -55,6 +61,8 @@
         if (_thisClient is not null)
             Sparkfly.EnqueueVote(track, _thisClient);
     }
+
+    /* TODO: create UpdateUi() to check in real-time if a vote on _searchedTracks was added by another user */
 
     private async Task SearchTracksAsync()
     {
