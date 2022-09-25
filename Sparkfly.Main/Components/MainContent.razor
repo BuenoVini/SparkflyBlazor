@@ -3,11 +3,11 @@
 @inject IStringLocalizer<MainContent> Text
 
 <MudMainContent>
-    <MudContainer MaxWidth="MaxWidth.Small" Class="my-4 py-4">
-        <MudStack Class="d-flex justify-center gap-16">
+    <MudContainer MaxWidth="MaxWidth.Small" Class="my-4 py-4 d-flex justify-center">
+        <MudStack Class="gap-16">
             @Body
 
-            <MudDivider />
+           <MudDivider />
 
             <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-n6 mb-1">
                 @Text["signature"]

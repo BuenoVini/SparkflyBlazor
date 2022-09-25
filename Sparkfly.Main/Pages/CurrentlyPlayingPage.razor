@@ -12,7 +12,7 @@
 
 <PageTitle>@Text["listening_to"] @_currentVote?.VotedTrack.ArtistsNames[0]</PageTitle>
 
-<MudStack Class="align-center">
+<MudStack>
     @if (_currentVote is not null && _currentVote.VotedTrack.SongId != "0")
     {
         <MudText Align="Align.Center" Typo="Typo.h4">@Text["playing_now"]</MudText>
