@@ -1,12 +1,14 @@
-﻿<MudNavMenu Color="Color.Primary">
-    <MudNavLink Href="currently-playing" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.PlayCircle">Playing Now</MudNavLink>
-    <MudNavLink Href="queue" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.QueueMusic">Queue</MudNavLink>
-    <MudNavLink Href="search" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Search">Search</MudNavLink>
+﻿@inject IStringLocalizer<NavMenu> Text
+
+<MudNavMenu Color="Color.Primary">
+    <MudNavLink Href="currently-playing" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.PlayCircle">@Text["currently_playing"]</MudNavLink>
+    <MudNavLink Href="queue" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.QueueMusic">@Text["queues"]</MudNavLink>
+    <MudNavLink Href="search" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Search">@Text["search"]</MudNavLink>
 
     <br />
     <MudDivider DividerType="DividerType.Middle"/>
     <br />
 
-    <MudNavLink Href="settings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings">Settings</MudNavLink>
-    <MudNavLink Href="info" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Info">About</MudNavLink>
+    <MudNavLink Href="help" Match="NavLinkMatch.Prefix" Icon="@Icons.Filled.Help">@Text["help"]</MudNavLink>
+    <MudNavLink Href="info" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Info">@Text["about"]</MudNavLink>
 </MudNavMenu>

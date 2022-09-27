@@ -1,0 +1,69 @@
+﻿@page "/help"
+
+@using Sparkfly.Main.Services
+
+@inject SparkflyManager Sparkfly
+@inject ProtectedLocalStorage LocalStorage
+@inject IStringLocalizer<HelpPage> Text
+
+<PageTitle>@Text["listening_to"] @_currentVote?.VotedTrack.ArtistsNames[0]</PageTitle>
+
+<MudStack Spacing="8">
+    <MudText Typo="Typo.h4" Align="Align.Center">
+        <bold>@Text["welcome"], @(_thisClient?.Name)!</bold>
+    </MudText>
+
+    <MudText Typo="Typo.h6" Align="Align.Center">
+        @Text["about_1"]
+    </MudText>
+
+
+    <MudDivider />
+
+
+    <MudText Typo="Typo.body1" Align="Align.Center">
+        @Text["about_2"]
+    </MudText>
+
+    <MudText Typo="Typo.body2" Align="Align.Center">
+        <div class="d-flex gap-1">
+            <MudIcon Icon="@Icons.Material.Filled.PlayCircle" Class="object-bottom" />
+            @Text["about_currently_playing"]
+        </div>
+    </MudText>
+    <MudText Typo="Typo.body2" Align="Align.Center">
+        <div class="d-flex gap-1">
+            <MudIcon Icon="@Icons.Material.Filled.QueueMusic" Class="object-bottom" />
+            @Text["about_queue"]
+        </div>
+    </MudText>
+    <MudText Typo="Typo.body2" Align="Align.Center">
+        <div class="d-flex gap-1">
+            <MudIcon Icon="@Icons.Material.Filled.Search" Class="object-bottom" />
+            @Text["about_search"]
+        </div>
+    </MudText>
+    <MudText Typo="Typo.body2" Align="Align.Center">
+        <div class="d-flex gap-1">
+            <MudIcon Icon="@Icons.Material.Filled.Info" Class="object-bottom" />
+            @Text["about_info"]
+        </div>
+    </MudText>
+</MudStack>
+
+@code {
+    private string? _clientNameInput;
+    private Vote? _currentVote;
+    private Client? _thisClient;
+
+    protected override void OnInitialized() => _currentVote = Sparkfly.CurrentlyPlayingVote;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _thisClient = (await LocalStorage.GetAsync<Client>("this_client")).Value;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+}

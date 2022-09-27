@@ -1,7 +1,9 @@
 ﻿@page "/"
+
+@layout MainNoNavMenuLayout
+
 @inject NavigationManager NavigationManager
 
 @code {
     protected override void OnAfterRender(bool firstRender) => NavigationManager.NavigateTo("/welcome");
-    //protected override void OnInitialized() => NavigationManager.NavigateTo("/welcome");
 }

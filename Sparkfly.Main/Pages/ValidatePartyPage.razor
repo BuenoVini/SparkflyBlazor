@@ -1,0 +1,50 @@
+﻿@page "/validate"
+@page "/validate/{code}/{state}"
+
+@using Sparkfly.Main.Services
+@using Sparkfly.Main.Data
+@using Sparkfly.Main.Services.RequestApi
+
+@inject SparkflyManager Sparkfly
+@inject NavigationManager NavManager
+@inject ProtectedLocalStorage LocalStorage
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "code")]
+    public string? Code { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "state")]
+    public string? State { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (Code is not null && State is not null)
+            {
+                try
+                {
+                    await Sparkfly.SpotifyRequestTokensAsync(Code, (await LocalStorage.GetAsync<string>("state")).Value ?? string.Empty, State);
+
+                    await LocalStorage.DeleteAsync("state");
+
+                    Sparkfly.StartTimer();
+                    // delete all clients connected because a new host has signed in
+
+                    NavManager.NavigateTo("/help");
+                }
+                catch (Exception ex)
+                {
+                    if (ex is SpotifyApiException || ex is HttpRequestException)
+                        NavManager.NavigateTo("/unhandled-error" + QueryString.Create("message", ex.Message));
+                    else
+                        throw;
+                }
+            }
+            else
+                NavManager.NavigateTo("/unhandled-error" + QueryString.Create("message", "Invalid returned response from Spotify Authentication."));
+        }
+    }
+}

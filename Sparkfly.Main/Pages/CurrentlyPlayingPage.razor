@@ -8,62 +8,83 @@
 
 @inject NavigationManager NavigationManager
 @inject SparkflyManager Sparkfly
+@inject IStringLocalizer<CurrentlyPlayingPage> Text
 
-<PageTitle>Listening to @currentTrack?.ArtistsNames[0]</PageTitle>
+<PageTitle>@Text["listening_to"] @_currentVote?.VotedTrack.ArtistsNames[0]</PageTitle>
 
 <MudStack>
-    <MudText Align="Align.Center" Typo="Typo.h6">You are listening to:</MudText>
-
-    @if (currentTrack is not null)
+    @if (_currentVote is not null && _currentVote.VotedTrack.SongId != "0")
     {
+        <MudText Align="Align.Center" Typo="Typo.h4">@Text["playing_now"]</MudText>
+
         <MudPaper Class="pa-4" MaxWidth="350px">
-            <MudImage Class="rounded-lg align-self-center" Fluid="true" Src=@currentTrack.CoverSizesUrl[(int)CoverSize.Medium] Alt="Album current playing" Elevation="25" />
+            <MudStack>
+                <MudImage Class="rounded-lg align-self-center" Fluid="true" Src=@_currentVote.VotedTrack.CoverSizesUrl[(int)CoverSize.Medium] Alt="Album current playing" Elevation="25" />
 
-            <MudDivider Class="my-4" DividerType="DividerType.Middle" />
+                <MudDivider Class="my-2" DividerType="DividerType.Middle" />
 
-            <MudText Align="Align.Center" Typo="Typo.body1">@currentTrack.SongName</MudText>
-            <MudText Align="Align.Center" Typo="Typo.body2">@currentTrack.ArtistsNames[0]</MudText>
-            <div class="d-flex justify-center mt-2">
-                <MudText Typo="Typo.caption">Suggested by <strong>SOMEONE</strong>!</MudText>
-            </div>
+                <MudText Align="Align.Center" Typo="Typo.body1">@_currentVote.VotedTrack.SongName</MudText>
+                <MudText Align="Align.Center" Class="my-n2" Typo="Typo.body2">@_currentVote.VotedTrack.ArtistsNames[0]</MudText>
+                <MudText Align="Align.Center" Typo="Typo.caption" Class="mt-2">@Text["suggested_by"] <strong>@_currentVote.Client.Name</strong>!</MudText>
+            </MudStack>
         </MudPaper>
 
-        <MudText Class="mt-4" Align="Align.Center" Typo="Typo.h6">Playing next: </MudText>
-
-        @if (nextTrack is not null)
+        @if (_nextVote is not null)
         {
-            <TrackCard Track="@nextTrack"/>
+            <MudText Class="mt-4" Align="Align.Center" Typo="Typo.h6">@Text["playing_next"]</MudText>
+
+            <TrackCard Track="@_nextVote.VotedTrack" Client="_nextVote.Client" />
         }
+    }
+    else
+    {
+        <MudText Typo="Typo.h4" Align="Align.Center">
+            @Text["nothing_playing_1"]
+        </MudText>
+
+        <MudImage Fluid="true" Width="400" Alt="Sad Taylor Swift" Class="rounded-lg my-4 align-self-center" Src="https://i.kym-cdn.com/photos/images/original/001/215/831/397.jpg" />
+
+        <MudText Typo="Typo.body1" Align="Align.Center">
+            @Text["nothing_playing_2"]
+        </MudText>
+        <MudText Typo="Typo.body1" Align="Align.Center">
+            @Text["nothing_playing_3"]
+        </MudText>
     }
 </MudStack>
 
 @code {
-    private Timer? timer;
-    private Track? currentTrack;
-    private Track? nextTrack;
-    private string? suggestedByClientName;
+    private Vote? _currentVote;
+    private Vote? _nextVote;
+    private ExecutionContext? _originalContext;
 
     protected override void OnInitialized()
     {
-        Sparkfly.SubscribeToTimerEvent(UpdateUi);   //delegate (object source, EventArgs args) { InvokeAsync(StateHasChanged); };
+        _originalContext = ExecutionContext.Capture();
+
+        Sparkfly.TimerUpdateEvent += UpdateUi;
+        Sparkfly.VotingQueueUpdateEvent += UpdateUi;
 
         UpdateUi(this, EventArgs.Empty);
     }
 
-    private async void UpdateUi(object source, EventArgs args)
+    private async void UpdateUi(object? source, EventArgs args)
     {
-        Track newestTrack = await Sparkfly.GetCurrentlyPlayingAsync();
+        _currentVote = Sparkfly.CurrentlyPlayingVote;
+        _nextVote = Sparkfly.TryPeekVotingQueue();
 
-        Vote? votes = (await Sparkfly.PeekVotingQueue());
-        suggestedByClientName = votes?.ClientName;
-        nextTrack = votes?.VotedTrack;
-
-        if (newestTrack.SongId != currentTrack?.SongId)
+        /* FIXED: page falling back to default culture - https://github.com/dotnet/aspnetcore/issues/28521 */
+        if (_originalContext is not null)
         {
-            currentTrack = newestTrack;
+            ExecutionContext.Restore(_originalContext);
+
             await InvokeAsync(StateHasChanged);
         }
     }
 
-    public void Dispose() => Sparkfly.UnsubscribeToTimerEvent(UpdateUi);
+    public void Dispose()
+    {
+        Sparkfly.TimerUpdateEvent -= UpdateUi;
+        Sparkfly.VotingQueueUpdateEvent -= UpdateUi;
+    }
 }

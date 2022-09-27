@@ -1,23 +1,127 @@
 ﻿@page "/welcome"
 
+@layout MainNoNavMenuLayout
+
 @using Sparkfly.Main.Services
+@using Sparkfly.Main.Services.RequestApi
 
 @inject SparkflyManager Sparkfly
+@inject NavigationManager NavManager
+@inject ProtectedLocalStorage LocalStorage
+@inject IStringLocalizer<WelcomePage> Text
 
-<PageTitle>Welcome to Sparkfly!</PageTitle>
+<PageTitle>@Text["welcome"]</PageTitle>
 
-<MudStack>
-    <MudText Class="mb-8" Typo="Typo.h3">Welcome to Sparkfly!</MudText>
-    <MudTextField @bind-Value="partyCode" Label="Party Code" HelperText="Type here your Party Code." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Outlined.Lock" AdornmentColor="Color.Primary"/>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary">Let Me In!</MudButton>
-    
-    <MudText Class="mt-16" Typo="Typo.h5" Align="Align.Center">If you are the host...</MudText>
-    <MudButton OnClick="@SpotifySignInAsync" Variant="Variant.Filled" Color="Color.Success">Sign in with Spotify</MudButton>
+<MudStack Spacing="8">
+    <MudText Typo="Typo.h3" Align="Align.Center">
+        <bold>@Text["welcome"]</bold>
+    </MudText>
+
+    <MudText Typo="Typo.h6" Align="Align.Center">
+        @Text["about_1"]
+    </MudText>
+
+
+    <MudDivider />
+
+
+    <MudText Typo="Typo.body1" Align="Align.Center">
+        @Text["about_2"]
+    </MudText>
+    <MudText Typo="Typo.body1" Align="Align.Center">
+        @Text["about_3"]
+    </MudText>
+
+    <MudTextField @bind-Value="_clientNameInput" Label=@Text["name_label"] HelperText=@Text["name_helper"] Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Outlined.Edit" AdornmentColor="Color.Primary" />
+
+
+    <MudDivider />
+
+
+    <MudText Class="mb-n6" Typo="Typo.body1" Align="Align.Center">
+        @Text["guide_1"]
+    </MudText>
+    <MudButton OnClick="@GuestSignInAsync" Variant="Variant.Filled" Color="Color.Primary">
+        @Text["btn_enter"]
+    </MudButton>
+
+    @if (_showErrorDialog)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-n4">
+            @Text["alert"]
+        </MudAlert>
+    }
+
+    <MudText Class="mt-2 mb-n6" Typo="Typo.body1" Align="Align.Center">
+        @Text["guide_2"]
+    </MudText>
+    <MudButton OnClick="@SpotifySignInAsync" Variant="Variant.Filled" Color="Color.Success">
+        @Text["btn_spotify"]
+    </MudButton>
 </MudStack>
 
 
 @code {
-    private string? partyCode;
+    private const int _MAX_CHARS = 26;
 
-    private async Task SpotifySignInAsync() => await Sparkfly.SpotifySignInAsync();
+    private string? _clientNameInput;
+    private bool _showErrorDialog = false;
+
+    private async Task SpotifySignInAsync()
+    {
+        if (!ValidateName())
+            return;
+
+        await SaveClientAsync();
+
+        string state = new Random().Next().ToString();
+        await LocalStorage.SetAsync("state", state);
+
+        try
+        {
+            NavManager.NavigateTo(Sparkfly.SpotifySignInUri(state).ToString());
+        }
+        catch (Exception ex)
+        {
+            if (ex is SpotifyApiException || ex is HttpRequestException)
+                NavManager.NavigateTo("/unhandled-error" + QueryString.Create("message", ex.Message));
+            else
+                throw;
+        }
+    }
+
+    private async Task GuestSignInAsync()
+    {
+        if (!ValidateName())
+            return;
+
+        await SaveClientAsync();
+
+        NavManager.NavigateTo("/help");
+    }
+
+    private bool ValidateName()
+    {
+        if (_clientNameInput is null)
+        {
+            _showErrorDialog = true;
+            return false;
+        }
+        else
+        {
+            if (_clientNameInput.Length > _MAX_CHARS)
+                _clientNameInput = _clientNameInput.Substring(0, _MAX_CHARS);
+
+            return true;
+        }
+    }
+
+    private async Task SaveClientAsync()
+    {
+        Client thisClient = new Client(Guid.NewGuid().ToString(), _clientNameInput ??= "ERROR_NO_NAME_FOUND");
+
+        Sparkfly.Clients.Add(thisClient);
+
+        await LocalStorage.SetAsync("this_client", thisClient);
+    }
 }

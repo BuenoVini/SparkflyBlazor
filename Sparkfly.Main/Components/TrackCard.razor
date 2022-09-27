@@ -2,6 +2,7 @@
 @using Sparkfly.Main.Services
 
 @inject SparkflyManager Sparkfly
+@inject IStringLocalizer<TrackCard> Text
 
 <MudPaper Class="pa-4">
     <MudStack Row="true">
@@ -11,6 +12,10 @@
                 @(Track.SongName?.Length <= MAX_CHARS ? Track.SongName : Track.SongName?.Substring(0, MAX_CHARS) + "...")
             </MudText>
             <MudText Typo="Typo.body2">@Track.ArtistsNames[0]</MudText>
+            @if (Client is not null)
+            {
+                <MudText Typo="Typo.caption">@Text["suggested_by"] @Client.Name</MudText>
+            }
         </MudStack>
 
         <MudSpacer />
@@ -39,11 +44,9 @@
     public enum BtnFunctionality { Add, Remove }
 
     [Parameter, EditorRequired] public Track Track { get; set; } = new();
+    [Parameter] public Client? Client { get; set; }
     [Parameter] public BtnFunctionality? BtnFunc { get; set; }
     [Parameter] public EventCallback<Track> OnClickCallback { get; set; }
 
     private async Task OnButtonClick() => await OnClickCallback.InvokeAsync(Track);
-
-    //private async Task EnqueueVoteAsync() => await Sparkfly.EnqueueVoteAsync(Track);
-    //private async Task RemoveVoteAsync() => await Sparkfly.RemoveVoteAsync(Track);
 }

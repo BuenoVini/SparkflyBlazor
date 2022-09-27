@@ -3,46 +3,82 @@
 @using Sparkfly.Main.Components
 @using Sparkfly.Main.Services
 @using Sparkfly.Main.Data
+@using Sparkfly.Main.Services.RequestApi
 
 @inject SparkflyManager Sparkfly
-@inject NavigationManager NavigationManager
+@inject NavigationManager NavManager
+@inject ProtectedLocalStorage LocalStorage
+@inject IStringLocalizer<SearchPage> Text
+
+<PageTitle>@Text["page_title"]</PageTitle>
 
 <MudStack Class="d-flex flex-column flex-grow-1 gap-4">
-    <form @onsubmit="SearchTracks">
-        <MudContainer Class="px-0 mb-8">
-            <MudTextField class="object-top" @bind-Value="UserInput" Label="Search for a track" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Primary" />
+    <MudText Align="Align.Center" Typo="Typo.h4">
+        @Text["page_header"]
+    </MudText>
+
+    <MudText Align="Align.Center" Typo="Typo.body1">
+        @Text["about_1"]
+    </MudText>
+
+    <form @onsubmit="SearchTracksAsync">
+        <MudContainer Class="px-0 my-4">
+            <MudTextField class="object-top" @bind-Value="_userInput" Label=@Text["label_input"] Variant="Variant.Outlined" OnAdornmentClick="@(async () => await SearchTracksAsync())" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Primary" />
         </MudContainer>
     </form>
 
-    @if (SearchedTracks is not null)
+    @if (_searchedTracks is not null && _thisClient is not null)
     {
-        @foreach (Track track in SearchedTracks)
+        <MudDivider />
+
+        @foreach (Track track in _searchedTracks)
         {
-            <TrackCard Track="track" OnClickCallback="EnqueueVoteAsync" BtnFunc="TrackCard.BtnFunctionality.Add"/>
+            @if (Sparkfly.IsTrackVoted(track))
+            {
+                <TrackCard Track="track" OnClickCallback="EnqueueVote" />
+            }
+            else
+            {
+                <TrackCard Track="track" OnClickCallback="EnqueueVote" BtnFunc="TrackCard.BtnFunctionality.Add" />
+            }
         }
-    }
-    else
-    {
-        <TrackCard Track="new Track().MakeThisDummy()" />
     }
 </MudStack>
 
 @code {
-    public string? UserInput { get; set; }
-    public List<Track>? SearchedTracks { get; set; }
+    private string? _userInput;
+    private List<Track>? _searchedTracks;
+    private Client? _thisClient;
 
-    private async Task EnqueueVoteAsync(Track track) => await Sparkfly.EnqueueVoteAsync(track);
-
-    private async Task SearchTracks()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        try     // TODO: move the try-catch to SparkflyManager
+        if (firstRender)
+            _thisClient = (await LocalStorage.GetAsync<Client>("this_client")).Value;
+    }
+
+    private void EnqueueVote(Track track)
+    {
+        if (_thisClient is not null)
+            Sparkfly.EnqueueVote(track, _thisClient);
+    }
+
+    /* TODO: create UpdateUi() to check in real-time if a vote on _searchedTracks was added by another user */
+
+    private async Task SearchTracksAsync()
+    {
+        if (_userInput is not null)
         {
-            if (UserInput is not null)
-                SearchedTracks = await Sparkfly.SpotifySearchTracksAsync(UserInput);
-        }
-        catch (HttpRequestException e)
-        {
-            await Sparkfly.HandleHttpExceptionAsync(e);
+            try
+            {
+                _searchedTracks = await Sparkfly.SpotifySearchTracksAsync(_userInput);
+            }
+            catch (Exception ex)
+            {
+                if (ex is SpotifyApiException || ex is HttpRequestException)
+                    NavManager.NavigateTo("/unhandled-error" + QueryString.Create("message", ex.Message));
+                else
+                    throw;
+            }
         }
     }
 }
