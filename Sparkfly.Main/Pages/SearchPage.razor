@@ -21,20 +21,26 @@
         @Text["about_1"]
     </MudText>
 
-    <form @onsubmit="SearchTracks">
+    <form @onsubmit="SearchTracksAsync">
         <MudContainer Class="px-0 my-4">
-            <MudTextField class="object-top" @bind-Value="_userInput" Label=@Text["label_input"] Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Primary" />
+            <MudTextField class="object-top" @bind-Value="_userInput" Label=@Text["label_input"] Variant="Variant.Outlined" OnAdornmentClick="@(async () => await SearchTracksAsync())" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Primary" />
         </MudContainer>
     </form>
 
-    @if (_searchedTracks is not null)
+    @if (_searchedTracks is not null && _thisClient is not null)
     {
         <MudDivider />
 
-        // TODO: verify if vote is already on queue
         @foreach (Track track in _searchedTracks)
         {
-            <TrackCard Track="track" OnClickCallback="EnqueueVote" BtnFunc="TrackCard.BtnFunctionality.Add" />
+            @if (Sparkfly.IsTrackVoted(track))
+            {
+                <TrackCard Track="track" OnClickCallback="EnqueueVote" />
+            }
+            else
+            {
+                <TrackCard Track="track" OnClickCallback="EnqueueVote" BtnFunc="TrackCard.BtnFunctionality.Add" />
+            }
         }
     }
 </MudStack>
@@ -56,7 +62,9 @@
             Sparkfly.EnqueueVote(track, _thisClient);
     }
 
-    private async Task SearchTracks()
+    /* TODO: create UpdateUi() to check in real-time if a vote on _searchedTracks was added by another user */
+
+    private async Task SearchTracksAsync()
     {
         if (_userInput is not null)
         {

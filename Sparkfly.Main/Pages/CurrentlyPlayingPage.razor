@@ -18,15 +18,15 @@
         <MudText Align="Align.Center" Typo="Typo.h4">@Text["playing_now"]</MudText>
 
         <MudPaper Class="pa-4" MaxWidth="350px">
-            <MudImage Class="rounded-lg align-self-center" Fluid="true" Src=@_currentVote.VotedTrack.CoverSizesUrl[(int)CoverSize.Medium] Alt="Album current playing" Elevation="25" />
+            <MudStack>
+                <MudImage Class="rounded-lg align-self-center" Fluid="true" Src=@_currentVote.VotedTrack.CoverSizesUrl[(int)CoverSize.Medium] Alt="Album current playing" Elevation="25" />
 
-            <MudDivider Class="my-4" DividerType="DividerType.Middle" />
+                <MudDivider Class="my-2" DividerType="DividerType.Middle" />
 
-            <MudText Align="Align.Center" Typo="Typo.body1">@_currentVote.VotedTrack.SongName</MudText>
-            <MudText Align="Align.Center" Typo="Typo.body2">@_currentVote.VotedTrack.ArtistsNames[0]</MudText>
-            <div class="d-flex justify-center mt-2">
-                <MudText Typo="Typo.caption">@Text["suggested_by"] <strong>@_currentVote.Client.Name</strong>!</MudText>
-            </div>
+                <MudText Align="Align.Center" Typo="Typo.body1">@_currentVote.VotedTrack.SongName</MudText>
+                <MudText Align="Align.Center" Class="my-n2" Typo="Typo.body2">@_currentVote.VotedTrack.ArtistsNames[0]</MudText>
+                <MudText Align="Align.Center" Typo="Typo.caption" Class="mt-2">@Text["suggested_by"] <strong>@_currentVote.Client.Name</strong>!</MudText>
+            </MudStack>
         </MudPaper>
 
         @if (_nextVote is not null)

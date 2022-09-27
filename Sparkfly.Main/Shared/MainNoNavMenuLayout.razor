@@ -1,0 +1,20 @@
+﻿@inherits LayoutComponentBase
+
+@using Sparkfly.Main.Components
+
+<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <AppBar />
+
+    @if (Body is not null)
+    {
+        <MainContent Body="@Body" />
+    }
+</MudLayout>
+
+@code {
+    bool _isDarkMode = true;
+}

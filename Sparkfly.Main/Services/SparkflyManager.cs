@@ -208,7 +208,9 @@ public class SparkflyManager
         }
 
         OnVotingQueueUpdate();
-    }    
+    }
+
+    public bool IsTrackVoted(Track track) => Votes.Exists(queue => queue.Where(vote => vote.VotedTrack.SongId == track.SongId).Any());
     #endregion
 
     #region Timer Methods
