@@ -160,16 +160,16 @@ public class SparkflyManager
     {
         int priority = 0;   // lower number means higher priority
 
-        for (priority = 0; priority < Votes.Count; priority++)
+        if (Votes.Any() && (CurrentlyPlayingVote.Client.Id == client.Id || PreviouslyPlayedVotes.Any(v => v.Client.Id == client.Id)))
+            priority = 1;
+
+        for (; priority < Votes.Count; priority++)
         {
             if (Votes[priority].Any(v => v.Client.Id == client.Id))
                 continue;
 
             break;
         }
-
-        if (priority == 0 && PreviouslyPlayedVotes.Any(v => v.Client.Id == client.Id))
-            priority = 1;
 
         if (priority >= Votes.Count)
             Votes.Add(new Queue<Vote>());
@@ -249,7 +249,10 @@ public class SparkflyManager
                 CurrentlyPlayingVote = nextVote;
             }
             else
+            {
+                PreviouslyPlayedVotes.Clear();
                 CurrentlyPlayingVote = new Vote(newestTrack, new Client("0", "Spotify"));
+            }
         }
 
         if (nextVote is not null && !nextVote.IsOnSpotifyQueue && (newestTrack.DurationMs - newestTrack.ProgressMs) < _loopPeriodInMs * 2)
