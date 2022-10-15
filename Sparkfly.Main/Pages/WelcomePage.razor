@@ -72,7 +72,7 @@
         if (!ValidateName())
             return;
 
-        await SaveClientAsync();
+        await SaveClientAsync(isHost: true);
 
         string state = new Random().Next().ToString();
         await LocalStorage.SetAsync("state", state);
@@ -116,9 +116,9 @@
         }
     }
 
-    private async Task SaveClientAsync()
+    private async Task SaveClientAsync(bool isHost = false)
     {
-        Client thisClient = new Client(Guid.NewGuid().ToString(), _clientNameInput ??= "ERROR_NO_NAME_FOUND");
+        Client thisClient = new Client(Guid.NewGuid().ToString(), _clientNameInput ??= "ERROR_NO_NAME_FOUND", isHost);
 
         Sparkfly.Clients.Add(thisClient);
 
