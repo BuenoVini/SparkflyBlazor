@@ -138,6 +138,9 @@
   <data name="listening_to" xml:space="preserve">
     <value>Ouvindo</value>
   </data>
+  <data name="share" xml:space="preserve">
+    <value>Compartilhe a festa com seus amigos: </value>
+  </data>
   <data name="welcome" xml:space="preserve">
     <value>É hora de se divertir</value>
   </data>

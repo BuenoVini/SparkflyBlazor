@@ -1,15 +1,14 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using Sparkfly.Main.Data;
+﻿using Sparkfly.Main.Data;
 using Sparkfly.Main.Services.RequestApi;
 using System.Net;
-using static Sparkfly.Main.Services.TimerManager;
 
 namespace Sparkfly.Main.Services;
 
 public class SparkflyManager
 {
     #region Attributes and Constructor
+    public string AppBaseUri { get; private set; }
+
     public EventHandler? TimerUpdateEvent;
     public EventHandler? VotingQueueUpdateEvent;
 
@@ -28,7 +27,8 @@ public class SparkflyManager
     {
         _timerManager = timerManager;
 
-        _spotifyManager = new SpotifyManager(HostEnvironment.IsProduction() ? "https://sparkflyblazor.azurewebsites.net/validate" : "https://localhost:5001/validate");
+        AppBaseUri = HostEnvironment.IsProduction() ? "https://sparkflyblazor.azurewebsites.net" : "https://localhost:5001";
+        _spotifyManager = new SpotifyManager(AppBaseUri + "/validate");
 
         CurrentlyPlayingVote = MakeDummyVote();
         PreviouslyPlayedVotes = new List<Vote>();

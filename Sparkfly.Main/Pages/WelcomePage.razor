@@ -1,4 +1,4 @@
-﻿@page "/welcome"
+﻿@page "/welcome/{partyNumber:int?}"
 
 @layout MainNoNavMenuLayout
 
@@ -52,16 +52,22 @@
         </MudAlert>
     }
 
-    <MudText Class="mt-2 mb-n6" Typo="Typo.body1" Align="Align.Center">
-        @Text["guide_2"]
-    </MudText>
-    <MudButton OnClick="@SpotifySignInAsync" Variant="Variant.Filled" Color="Color.Success">
-        @Text["btn_spotify"]
-    </MudButton>
+    @if (PartyNumber is null)
+    {
+        <MudText Class="mt-2 mb-n6" Typo="Typo.body1" Align="Align.Center">
+            @Text["guide_2"]
+        </MudText>
+        <MudButton OnClick="@SpotifySignInAsync" Variant="Variant.Filled" Color="Color.Success">
+            @Text["btn_spotify"]
+        </MudButton>
+    }
+
 </MudStack>
 
 
 @code {
+    [Parameter] public int? PartyNumber { get; set; }
+
     private const int _MAX_CHARS = 26;
 
     private string? _clientNameInput;
