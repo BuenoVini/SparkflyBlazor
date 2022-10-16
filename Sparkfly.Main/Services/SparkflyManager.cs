@@ -196,10 +196,10 @@ public class SparkflyManager
     {
         for (int i = 0; i < Votes.Count; i++)
         {
-            if (Votes[i].Any(v => v.VotedTrack.SongId == track.SongId && v.Client.Id == client.Id) == false)
+            if (Votes[i].Any(v => v.VotedTrack.SongId == track.SongId && (client.IsHost || v.Client.Id == client.Id)) == false)
                 continue;
 
-            Votes[i] = new Queue<Vote>(Votes[i].Where(v => !(v.VotedTrack.SongId == track.SongId && v.Client.Id == client.Id)));
+            Votes[i] = new Queue<Vote>(Votes[i].Where(v => v.VotedTrack.SongId != track.SongId));
 
             if (!Votes[i].Any())
                 ResetPriority(i);
